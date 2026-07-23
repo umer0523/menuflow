@@ -68,7 +68,14 @@ Reports and artifacts (`playwright-report/`, `test-results/`) are git-ignored.
 
 > **About the base URL:** `https://connect.squareupsandbox.com` is Square's sandbox **API host**, not a website — opening it in a browser shows a 404 by design. The API lives under `/v2/*` (e.g. `GET /v2/locations`) and requires a bearer token; the backend's Square SDK client targets this host, which is exactly the SDK's own `SquareEnvironment.Sandbox` value.
 
-4. Seed data (Square's seed or your own): aim for **2 locations**, **3–4 categories**, **6–10 items**, with **at least one item available at only one of the two locations** (to prove the location filter). For the time/day bonus, set up at least one category with limited hours.
+4. Seed data — either run the bundled seeder against a fresh sandbox:
+
+   ```bash
+   pnpm --filter @menuflow/server seed:square
+   ```
+
+   It provisions the full target data set — a second location (**Uptown**), **4 categories**, and **8 priced items**, including one item absent at Uptown and one exclusive to it (proving the location filter both ways) — and safely refuses to run if a second location or catalog items already exist. Or seed manually in the Square dashboard: aim for **2 locations**, **3–4 categories**, **6–10 items**, with **at least one item available at only one of the two locations**. For the time/day bonus, set up at least one category with limited hours.
+
 5. Confirm the wiring end-to-end (fetches locations + catalog from your sandbox):
 
    ```bash

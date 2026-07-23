@@ -13,6 +13,7 @@
     "test:cov": "jest --coverage",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "smoke:square": "ts-node scripts/square-smoke.ts",
+    "seed:square": "ts-node scripts/square-seed.ts",
     "openapi:generate": "ts-node scripts/generate-openapi.ts"
   },
   "dependencies": {
