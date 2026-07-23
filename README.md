@@ -4,12 +4,16 @@ A multi-location **Square menu browser**. Pick a location, browse catalog items 
 
 Built with **Next.js (App Router)** on the frontend and **NestJS** on the backend, in a single pnpm monorepo.
 
-> Status: **foundation/setup**. Application code lands in later phases.
+> Status: **scaffold ready**. The monorepo boots end-to-end; menu features land in later phases.
 
 ---
 
+## Prerequisites
+
+- Node.js 22 LTS (see `.nvmrc`)
+- pnpm 10+
+
 ## Running locally
-> _To be completed. Expected shape:_
 
 ```bash
 pnpm install
@@ -17,10 +21,25 @@ cp .env.example server/.env     # fill in Square sandbox credentials
 pnpm dev                        # runs client + server together
 ```
 
-- Client: Next.js dev server.
-- Server: NestJS API proxying Square.
+- Client: Next.js dev server on http://localhost:3000
+- Server: NestJS API on http://localhost:3001 (health check at `/health`)
+
+The server validates its environment on startup and **fails fast** if any Square variable is missing or malformed.
+
+## Scripts
+
+Run from the repo root:
+
+| Script        | Purpose                        |
+| ------------- | ------------------------------ |
+| `pnpm dev`    | Run client + server together   |
+| `pnpm build`  | Build both workspaces          |
+| `pnpm lint`   | Lint both workspaces           |
+| `pnpm test`   | Run all tests                  |
+| `pnpm format` | Prettier write across the repo |
 
 ## Square sandbox setup
+
 > _To be completed alongside the backend integration._
 
 1. Create a free Square developer account → https://developer.squareup.com
@@ -29,17 +48,19 @@ pnpm dev                        # runs client + server together
 4. Seed data (Square's seed or your own): aim for **2 locations**, **3–4 categories**, **6–10 items**, with **at least one item available at only one of the two locations** (to prove the location filter). For the time/day bonus, set up at least one category with limited hours.
 
 ## Environment variables
+
 `.env.example` documents everything required; secrets are never committed. Expected keys:
 
-| Key | Purpose |
-|---|---|
+| Key                   | Purpose                             |
+| --------------------- | ----------------------------------- |
 | `SQUARE_ACCESS_TOKEN` | Sandbox access token (backend only) |
-| `SQUARE_ENV` | `sandbox` |
-| `SQUARE_BASE_URL` | Square sandbox base URL |
-| `PORT` | Backend port |
-| `CLIENT_ORIGIN` | Allowed CORS origin |
+| `SQUARE_ENV`          | `sandbox`                           |
+| `SQUARE_BASE_URL`     | Square sandbox base URL             |
+| `PORT`                | Backend port                        |
+| `CLIENT_ORIGIN`       | Allowed CORS origin                 |
 
 ---
 
 ## Roadmap
+
 > _Candidate directions, to be prioritized as the project progresses:_ time-of-day/day-of-week availability, modifiers, search, cart with subtotal, inventory/out-of-stock, offline caching.

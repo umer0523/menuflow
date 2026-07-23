@@ -1,0 +1,7 @@
+node_modules
+.claude
+client/.next
+client/out
+server/dist
+client/lib/api/generated
+pnpm-lock.yaml

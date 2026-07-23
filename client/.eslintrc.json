@@ -1,0 +1,8 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "ignorePatterns": ["lib/api/generated/**", ".next/**"],
+  "rules": {
+    "no-console": "error",
+    "@typescript-eslint/no-explicit-any": "error"
+  }
+}
