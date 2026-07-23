@@ -4,7 +4,7 @@ A multi-location **Square menu browser**. Pick a location, browse catalog items 
 
 Built with **Next.js (App Router)** on the frontend and **NestJS** on the backend, in a single pnpm monorepo.
 
-> Status: **scaffold ready**. The monorepo boots end-to-end; menu features land in later phases.
+> Status: **in progress**. Locations + the location switcher are live (`GET /locations`, persisted selection); the grouped menu, category filter, and item detail land in the next phases.
 
 ---
 
@@ -18,25 +18,29 @@ Built with **Next.js (App Router)** on the frontend and **NestJS** on the backen
 ```bash
 pnpm install
 cp .env.example server/.env     # fill in Square sandbox credentials
+pnpm api:generate               # emit the OpenAPI spec + typed client (no creds needed)
 pnpm dev                        # runs client + server together
 ```
 
 - Client: Next.js dev server on http://localhost:3000
-- Server: NestJS API on http://localhost:3001 (health check at `/health`)
+- Server: NestJS API on http://localhost:3001 (health check at `/health`, API docs at `/docs`)
 
 The server validates its environment on startup and **fails fast** if any Square variable is missing or malformed.
+
+`pnpm api:generate` builds the backend OpenAPI spec (`server/openapi.json`) and regenerates the typed client under `client/lib/api/generated/` (both git-ignored). Re-run it whenever a controller or DTO changes. The client's API base URL defaults to `http://localhost:3001` and can be overridden with `NEXT_PUBLIC_API_URL`.
 
 ## Scripts
 
 Run from the repo root:
 
-| Script        | Purpose                        |
-| ------------- | ------------------------------ |
-| `pnpm dev`    | Run client + server together   |
-| `pnpm build`  | Build both workspaces          |
-| `pnpm lint`   | Lint both workspaces           |
-| `pnpm test`   | Run all unit tests             |
-| `pnpm format` | Prettier write across the repo |
+| Script              | Purpose                                |
+| ------------------- | -------------------------------------- |
+| `pnpm dev`          | Run client + server together           |
+| `pnpm build`        | Build both workspaces                  |
+| `pnpm lint`         | Lint both workspaces                   |
+| `pnpm test`         | Run all unit tests                     |
+| `pnpm api:generate` | Regenerate OpenAPI spec + typed client |
+| `pnpm format`       | Prettier write across the repo         |
 
 ## Testing
 
@@ -57,8 +61,6 @@ pnpm --filter @menuflow/client test:e2e        # or test:e2e:ui
 Reports and artifacts (`playwright-report/`, `test-results/`) are git-ignored.
 
 ## Square sandbox setup
-
-> _To be completed alongside the backend integration._
 
 1. Create a free Square developer account → https://developer.squareup.com
 2. Create a **sandbox application**; copy the **sandbox access token** and base URL.

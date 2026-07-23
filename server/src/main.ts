@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
 import type { AppConfig } from './config/app-config.types';
+import { setupSwagger } from './config/setup-swagger.util';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap(): Promise<void> {
@@ -24,6 +25,8 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   app.enableCors({ origin: config.get('clientOrigin', { infer: true }) });
+
+  setupSwagger(app);
 
   const port = config.get('port', { infer: true });
   await app.listen(port);
