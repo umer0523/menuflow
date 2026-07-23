@@ -15,6 +15,12 @@ client/lib/api/generated/
 # Generated OpenAPI spec
 server/openapi.json
 
+# Playwright (local-only e2e — reports, artifacts, browser cache)
+client/playwright-report/
+client/test-results/
+client/playwright/.cache/
+client/blob-report/
+
 # Env
 .env
 .env.test

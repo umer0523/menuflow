@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "api:generate": "orval --config orval.config.ts"
   },
   "dependencies": {
@@ -32,6 +34,8 @@
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@playwright/test": "^1.49.1",
+    "@testing-library/user-event": "^14.5.2",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",

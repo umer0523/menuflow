@@ -35,8 +35,26 @@ Run from the repo root:
 | `pnpm dev`    | Run client + server together   |
 | `pnpm build`  | Build both workspaces          |
 | `pnpm lint`   | Lint both workspaces           |
-| `pnpm test`   | Run all tests                  |
+| `pnpm test`   | Run all unit tests             |
 | `pnpm format` | Prettier write across the repo |
+
+## Testing
+
+Two tiers only — **unit** and **end-to-end** (no integration tier).
+
+| Command         | What it runs                                                                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm test`     | Unit tests across both workspaces — backend Jest + frontend Vitest. Passes from a clean checkout: no Square credentials, no running servers.        |
+| `pnpm test:e2e` | Backend end-to-end (NestJS booted, exercised with Supertest). Square is **mocked at the `SquareService` boundary** — the live sandbox is never hit. |
+
+**Frontend e2e (Playwright) is a local development aid only** — no CI, no production runs. It boots the real client + server, so it needs `server/.env` (Square sandbox creds). One-time browser install, then run from `client/`:
+
+```bash
+pnpm --filter @menuflow/client exec playwright install
+pnpm --filter @menuflow/client test:e2e        # or test:e2e:ui
+```
+
+Reports and artifacts (`playwright-report/`, `test-results/`) are git-ignored.
 
 ## Square sandbox setup
 

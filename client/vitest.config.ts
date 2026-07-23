@@ -8,8 +8,10 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
-    // Never assert on generated API code or reach the network.
-    exclude: ['node_modules', '.next', 'lib/api/generated'],
+    // Unit tests are `*.test.ts(x)`; `*.spec.ts` under `e2e/` belongs to Playwright.
+    include: ['**/*.test.{ts,tsx}'],
+    // Never assert on generated API code, Playwright specs, or reach the network.
+    exclude: ['node_modules', '.next', 'lib/api/generated', 'e2e'],
   },
   resolve: {
     alias: {
