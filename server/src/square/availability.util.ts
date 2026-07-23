@@ -1,5 +1,26 @@
 import type { AvailabilityFields, AvailabilityPeriodModel } from './square.types';
 
+/** Returns today's time windows for display, or null when the category has no restrictions. */
+export function getTodayWindows(
+  periodIds: string[],
+  periods: Record<string, AvailabilityPeriodModel>,
+  timezone: string,
+  now: Date = new Date(),
+): Array<{ startLocalTime: string; endLocalTime: string }> | null {
+  if (periodIds.length === 0) return null;
+
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    weekday: 'short',
+  }).formatToParts(now);
+  const currentDay = (parts.find((p) => p.type === 'weekday')?.value ?? '').toUpperCase();
+
+  return periodIds
+    .map((id) => periods[id])
+    .filter((p): p is AvailabilityPeriodModel => p !== undefined && p.dayOfWeek === currentDay)
+    .map((p) => ({ startLocalTime: p.startLocalTime, endLocalTime: p.endLocalTime }));
+}
+
 /**
  * Core requirement #3 — whether a catalog object is visible at a given location.
  *

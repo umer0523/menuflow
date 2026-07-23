@@ -1,4 +1,4 @@
-import { isAvailableNow, isItemVisibleAtLocation } from './availability.util';
+import { getTodayWindows, isAvailableNow, isItemVisibleAtLocation } from './availability.util';
 import type { AvailabilityFields, AvailabilityPeriodModel } from './square.types';
 
 const DOWNTOWN = 'loc-downtown';
@@ -124,5 +124,30 @@ describe('isAvailableNow', () => {
     const p = period({ dayOfWeek: 'MON', startLocalTime: '00:00:00', endLocalTime: '01:00:00' });
     expect(isAvailableNow([p.id], periodMap(p), TZ_NY, midnight_ny)).toBe(true);
     expect(isAvailableNow([p.id], periodMap(p), 'America/Los_Angeles', midnight_ny)).toBe(false);
+  });
+});
+
+describe('getTodayWindows', () => {
+  // MONDAY_0930_NY and helpers are shared from the isAvailableNow suite above.
+
+  it('returns null when periodIds is empty (no restriction)', () => {
+    expect(getTodayWindows([], {}, TZ_NY, MONDAY_0930_NY)).toBeNull();
+  });
+
+  it('returns the matching windows for today', () => {
+    const p = period({ dayOfWeek: 'MON', startLocalTime: '07:00:00', endLocalTime: '11:00:00' });
+    const result = getTodayWindows([p.id], periodMap(p), TZ_NY, MONDAY_0930_NY);
+    expect(result).toEqual([{ startLocalTime: '07:00:00', endLocalTime: '11:00:00' }]);
+  });
+
+  it('returns empty array when periods exist but none match today', () => {
+    const p = period({ dayOfWeek: 'TUE', startLocalTime: '07:00:00', endLocalTime: '11:00:00' });
+    const result = getTodayWindows([p.id], periodMap(p), TZ_NY, MONDAY_0930_NY);
+    expect(result).toEqual([]);
+  });
+
+  it('skips unknown period ids silently', () => {
+    const result = getTodayWindows(['ghost-id'], {}, TZ_NY, MONDAY_0930_NY);
+    expect(result).toEqual([]);
   });
 });

@@ -16,4 +16,6 @@ export interface MenuCategoryView {
   name: string;
   items: MenuItemView[];
   available: boolean;
+  /** Today's orderable windows in the location timezone. null = no restriction. */
+  availabilityWindows: Array<{ startLocalTime: string; endLocalTime: string }> | null;
 }

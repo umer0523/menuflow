@@ -84,6 +84,9 @@ describe('Catalog (e2e)', () => {
         .expect(200);
 
       expect(response.body.every((group: { available: boolean }) => group.available)).toBe(true);
+      expect(
+        response.body.every((group: { availabilityWindows: null }) => group.availabilityWindows === null),
+      ).toBe(true);
     });
 
     it('includes available: false for a time-limited category outside its window', async () => {
@@ -134,8 +137,9 @@ describe('Catalog (e2e)', () => {
 
       const breakfast = response.body.find(
         (g: { name: string }) => g.name === 'E2E Breakfast',
-      ) as { available: boolean } | undefined;
+      ) as { available: boolean; availabilityWindows: unknown[] } | undefined;
       expect(breakfast?.available).toBe(false);
+      expect(Array.isArray(breakfast?.availabilityWindows)).toBe(true);
     });
   });
 

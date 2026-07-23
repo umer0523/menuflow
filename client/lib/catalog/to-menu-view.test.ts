@@ -9,6 +9,7 @@ const CATEGORIES: MenuCategoryResponseDto[] = [
     id: 'cat-coffee',
     name: 'Coffee',
     available: true,
+    availabilityWindows: null,
     items: [
       {
         id: 'item-latte',
@@ -49,5 +50,16 @@ describe('toMenuView', () => {
   it('threads the category availability flag through to the view model', () => {
     const view = toMenuView([{ ...CATEGORIES[0], available: false }]);
     expect(view[0]?.available).toBe(false);
+  });
+
+  it('threads availabilityWindows through to the view model', () => {
+    const windows = [{ startLocalTime: '07:00:00', endLocalTime: '11:00:00' }];
+    const view = toMenuView([{ ...CATEGORIES[0], availabilityWindows: windows }]);
+    expect(view[0]?.availabilityWindows).toEqual(windows);
+  });
+
+  it('maps null availabilityWindows as null', () => {
+    const view = toMenuView(CATEGORIES);
+    expect(view[0]?.availabilityWindows).toBeNull();
   });
 });

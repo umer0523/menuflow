@@ -14,6 +14,7 @@ export function toMenuView(categories: MenuCategoryResponseDto[]): MenuCategoryV
     name: category.name,
     items: category.items.map(toItemView),
     available: category.available,
+    availabilityWindows: category.availabilityWindows ?? null,
   }));
 }
 

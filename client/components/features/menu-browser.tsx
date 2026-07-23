@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { RefreshCw } from 'lucide-react';
 
-import { MENU_COPY, MENU_SKELETON_COUNT } from '@/constants/menu.constants';
+import { CATEGORY_FILTER, MENU_COPY, MENU_SKELETON_COUNT } from '@/constants/menu.constants';
 import { useCatalog } from '@/hooks/use-catalog';
 import { useCategoryFilter } from '@/hooks/use-category-filter';
 import { categoryKey } from '@/lib/catalog/category-key';
@@ -18,19 +18,30 @@ import { MenuCategorySection } from './menu-category-section';
 const MIN_CATEGORIES_FOR_FILTER = 2;
 
 /**
- * Grouped, location-aware menu (core requirements #2, #3, #4). Re-fetches whenever the selected
- * location changes (the query is keyed on it) and renders explicit loading / empty / error+retry
- * states — never a bare spinner. Server state stays in TanStack Query; the selected location and the
- * category filter are UI state. Hooks run before any early return (Rules of Hooks).
+ * Grouped, location-aware menu (core requirements #2, #3, #4 + time-of-day bonus). Re-fetches
+ * whenever the selected location changes and renders explicit loading / empty / error+retry states.
+ *
+ * Unavailable categories (outside their time window) are shown dimmed with an "Available HH–HH"
+ * badge rather than hidden — the category filter chips only list currently-orderable categories,
+ * but the "All" view always shows every category so guests know what's coming up.
  */
 export function MenuBrowser() {
   const { selectedLocationId } = useSelectedLocation();
   const { data, isPending, isError, error, refetch } = useCatalog(selectedLocationId);
-  const categories = useMemo(
-    () => (data ? toMenuView(data).filter((c) => c.available) : []),
-    [data],
+
+  const allCategories = useMemo(() => (data ? toMenuView(data) : []), [data]);
+  const availableCategories = useMemo(
+    () => allCategories.filter((c) => c.available),
+    [allCategories],
   );
-  const { selectedKey, setSelectedKey, filteredCategories } = useCategoryFilter(categories);
+  const { selectedKey, setSelectedKey, filteredCategories } = useCategoryFilter(availableCategories);
+
+  // "All" shows every category (available normal, unavailable dimmed); a specific filter shows only
+  // that category (always available, since unavailable ones never appear in the filter chips).
+  const displayCategories = useMemo(
+    () => (selectedKey === CATEGORY_FILTER.ALL_KEY ? allCategories : filteredCategories),
+    [selectedKey, allCategories, filteredCategories],
+  );
 
   if (isPending) {
     return (
@@ -62,21 +73,21 @@ export function MenuBrowser() {
     );
   }
 
-  if (categories.length === 0) {
+  if (allCategories.length === 0) {
     return <p className="text-sm text-muted-foreground">{MENU_COPY.EMPTY}</p>;
   }
 
   return (
     <div className="flex flex-col gap-6">
-      {categories.length >= MIN_CATEGORIES_FOR_FILTER ? (
+      {availableCategories.length >= MIN_CATEGORIES_FOR_FILTER ? (
         <CategoryFilter
-          categories={categories}
+          categories={availableCategories}
           selectedKey={selectedKey}
           onSelect={setSelectedKey}
         />
       ) : null}
       <div className="flex flex-col gap-8">
-        {filteredCategories.map((category) => (
+        {displayCategories.map((category) => (
           <MenuCategorySection key={categoryKey(category.id)} category={category} />
         ))}
       </div>

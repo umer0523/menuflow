@@ -43,9 +43,10 @@ describe('CatalogService', () => {
       expect(pastry?.items.map((item) => item.name)).toEqual(['Croissant']);
     });
 
-    it('marks categories with no availability periods as available: true', async () => {
+    it('marks categories with no availability periods as available: true with null windows', async () => {
       const menu = await service.getCatalog(DOWNTOWN_LOCATION_ID);
       expect(menu.every((group) => group.available)).toBe(true);
+      expect(menu.every((group) => group.availabilityWindows === null)).toBe(true);
     });
 
     it('marks a time-limited category available: false when outside its window', async () => {
@@ -92,6 +93,8 @@ describe('CatalogService', () => {
 
       const breakfast = menu.find((g) => g.id === 'cat-breakfast');
       expect(breakfast?.available).toBe(false);
+      // SUN window with no matching day → empty array (has periods, none apply today)
+      expect(Array.isArray(breakfast?.availabilityWindows)).toBe(true);
     });
 
     it('applies the availability rule and hides categories left empty at the airport', async () => {

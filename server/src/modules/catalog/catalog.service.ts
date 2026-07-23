@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { ClientNotFoundError } from '../../common/errors/client-not-found.error';
-import { isAvailableNow, isItemVisibleAtLocation } from '../../square/availability.util';
+import { getTodayWindows, isAvailableNow, isItemVisibleAtLocation } from '../../square/availability.util';
 import { resolveItemPrice } from '../../square/money.util';
 import { SquareService } from '../../square/square.service';
 import type { CatalogItemModel, ItemVariationModel, MoneyModel } from '../../square/square.types';
@@ -93,6 +93,11 @@ export class CatalogService {
             snapshot.availabilityPeriods,
             timezone,
           ),
+          availabilityWindows: getTodayWindows(
+            category.availabilityPeriodIds,
+            snapshot.availabilityPeriods,
+            timezone,
+          ),
         });
       }
     }
@@ -107,6 +112,7 @@ export class CatalogService {
         name: UNCATEGORIZED.name,
         items: orphans.map((item) => this.toItemDto(item)),
         available: true,
+        availabilityWindows: null,
       });
     }
 

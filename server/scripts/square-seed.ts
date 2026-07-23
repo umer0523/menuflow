@@ -57,6 +57,8 @@ const SEED_CATEGORIES: ReadonlyArray<{ key: string; name: string }> = [
   { key: 'sandwiches', name: 'Sandwiches' },
   { key: 'seasonal', name: 'Seasonal' },
   { key: 'breakfast', name: 'Breakfast' },
+  { key: 'lunch', name: 'Lunch' },
+  { key: 'dinner', name: 'Dinner' },
 ];
 
 const SEED_ITEMS: ReadonlyArray<SeedItem> = [
@@ -138,6 +140,37 @@ const SEED_ITEMS: ReadonlyArray<SeedItem> = [
     categoryKey: 'breakfast',
     variations: [{ name: 'Regular', cents: 875 }],
   },
+  {
+    key: 'soup-of-the-day',
+    name: 'Soup of the Day',
+    description: 'Ask your barista for today\'s selection. Available 11 AM–3 PM.',
+    categoryKey: 'lunch',
+    variations: [{ name: 'Cup', cents: 650 }, { name: 'Bowl', cents: 850 }],
+  },
+  {
+    key: 'grilled-chicken-salad',
+    name: 'Grilled Chicken Salad',
+    description: 'Mixed greens, cherry tomatoes, cucumber, lemon vinaigrette. Available 11 AM–3 PM.',
+    categoryKey: 'lunch',
+    variations: [{ name: 'Regular', cents: 1200 }],
+  },
+  {
+    key: 'pasta-primavera',
+    name: 'Pasta Primavera',
+    description: 'Seasonal vegetables, olive oil, parmesan. Available 5–10 PM.',
+    categoryKey: 'dinner',
+    variations: [{ name: 'Regular', cents: 1600 }],
+  },
+  {
+    key: 'ny-strip',
+    name: 'NY Strip',
+    description: '10 oz dry-aged strip, served with roasted potatoes. Available 5–10 PM.',
+    categoryKey: 'dinner',
+    variations: [
+      { name: 'Regular', cents: 3200 },
+      { name: 'Add truffle butter', cents: 3700 },
+    ],
+  },
 ];
 
 const DAYS_OF_WEEK = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] as const;
@@ -151,6 +184,26 @@ const BREAKFAST_PERIOD_OBJECTS: Square.CatalogObject[] = DAYS_OF_WEEK.map((day) 
 
 const BREAKFAST_PERIOD_IDS: string[] = DAYS_OF_WEEK.map(
   (day) => `#avail-breakfast-${day.toLowerCase()}`,
+);
+
+/** Lunch window: 11:00 AM – 3:00 PM every day. */
+const LUNCH_PERIOD_OBJECTS: Square.CatalogObject[] = DAYS_OF_WEEK.map((day) => ({
+  type: 'AVAILABILITY_PERIOD',
+  id: `#avail-lunch-${day.toLowerCase()}`,
+  availabilityPeriodData: { dayOfWeek: day, startLocalTime: '11:00:00', endLocalTime: '15:00:00' },
+}));
+
+const LUNCH_PERIOD_IDS: string[] = DAYS_OF_WEEK.map((day) => `#avail-lunch-${day.toLowerCase()}`);
+
+/** Dinner window: 5:00 PM – 10:00 PM every day. */
+const DINNER_PERIOD_OBJECTS: Square.CatalogObject[] = DAYS_OF_WEEK.map((day) => ({
+  type: 'AVAILABILITY_PERIOD',
+  id: `#avail-dinner-${day.toLowerCase()}`,
+  availabilityPeriodData: { dayOfWeek: day, startLocalTime: '17:00:00', endLocalTime: '22:00:00' },
+}));
+
+const DINNER_PERIOD_IDS: string[] = DAYS_OF_WEEK.map(
+  (day) => `#avail-dinner-${day.toLowerCase()}`,
 );
 
 function toCategoryObject(
@@ -227,21 +280,28 @@ async function seedCatalog(
     logger.log(`Catalog already has items (e.g. ${existing.id}) — skipping catalog seed.`);
     return;
   }
+  const PERIOD_IDS_BY_KEY: Record<string, string[]> = {
+    breakfast: BREAKFAST_PERIOD_IDS,
+    lunch: LUNCH_PERIOD_IDS,
+    dinner: DINNER_PERIOD_IDS,
+  };
   const objects: Square.CatalogObject[] = [
     ...BREAKFAST_PERIOD_OBJECTS,
-    ...SEED_CATEGORIES.map((cat) =>
-      toCategoryObject(cat, cat.key === 'breakfast' ? BREAKFAST_PERIOD_IDS : []),
-    ),
+    ...LUNCH_PERIOD_OBJECTS,
+    ...DINNER_PERIOD_OBJECTS,
+    ...SEED_CATEGORIES.map((cat) => toCategoryObject(cat, PERIOD_IDS_BY_KEY[cat.key] ?? [])),
     ...SEED_ITEMS.map((item) => toItemObject(item, secondLocationId)),
   ];
   await client.catalog.batchUpsert({
     idempotencyKey: randomUUID(),
     batches: [{ objects }],
   });
+  const totalPeriods =
+    BREAKFAST_PERIOD_OBJECTS.length + LUNCH_PERIOD_OBJECTS.length + DINNER_PERIOD_OBJECTS.length;
   logger.log(
-    `Seeded ${BREAKFAST_PERIOD_OBJECTS.length} availability periods, ` +
+    `Seeded ${totalPeriods} availability periods, ` +
       `${SEED_CATEGORIES.length} categories, and ${SEED_ITEMS.length} items ` +
-      `(1 absent at the second location, 1 exclusive to it, 2 breakfast-only).`,
+      `(breakfast 7–11 AM, lunch 11 AM–3 PM, dinner 5–10 PM).`,
   );
 }
 
