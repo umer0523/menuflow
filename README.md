@@ -4,7 +4,7 @@ A multi-location **Square menu browser**. Pick a location, browse catalog items 
 
 Built with **Next.js (App Router)** on the frontend and **NestJS** on the backend, in a single pnpm monorepo.
 
-> Status: **in progress**. Locations + the location switcher are live (`GET /locations`, persisted selection); the grouped menu, category filter, and item detail land in the next phases.
+> Status: **in progress**. Live: the location switcher (`GET /locations`, persisted selection) and the location-aware grouped menu — `GET /catalog`, `GET /categories`, and `GET /items` (filterable by `locationId` + `categoryId`) resolve item visibility with Square's `present_at_all_locations` / `present_at_location_ids` / `absent_at_location_ids` rule and hide empty categories. The standalone category-filter UI and item-detail page land in the next phases.
 
 ---
 
