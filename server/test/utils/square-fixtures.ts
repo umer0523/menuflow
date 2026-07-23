@@ -1,25 +1,18 @@
 /**
- * Ready-made raw Square fixtures for the availability / money / category tests.
+ * Ready-made Square SDK fixtures for the SquareService boundary tests.
  *
- * The scenario deliberately includes an item present at only ONE of the two locations,
- * so the `present_at_all_locations` / `present_at_location_ids` / `absent_at_location_ids`
- * resolution (architecture doc §6) has something to prove. Extend as M2/M4 land.
+ * The scenario mirrors the challenge seed guidance: two locations, two categories, and items
+ * including one present at only ONE location — so the availability resolution has something to
+ * prove once the catalog service (M4) consumes this snapshot.
  */
-import {
-  makeCategory,
-  makeItem,
-  makeLocation,
-  makeMoney,
-  makeVariation,
-  type SquareCatalogCategory,
-  type SquareCatalogItem,
-  type SquareLocation,
-} from './catalog-builders';
+import type { Square } from 'square';
+
+import { makeCategory, makeItem, makeLocation, makeMoney, makeVariation } from './catalog-builders';
 
 export const DOWNTOWN_LOCATION_ID = 'loc-downtown';
 export const AIRPORT_LOCATION_ID = 'loc-airport';
 
-export const TWO_LOCATIONS: SquareLocation[] = [
+export const TWO_LOCATIONS: Square.Location[] = [
   makeLocation({ id: DOWNTOWN_LOCATION_ID, name: 'Downtown', timezone: 'America/New_York' }),
   makeLocation({ id: AIRPORT_LOCATION_ID, name: 'Airport', timezone: 'America/Chicago' }),
 ];
@@ -27,52 +20,52 @@ export const TWO_LOCATIONS: SquareLocation[] = [
 export const COFFEE_CATEGORY_ID = 'cat-coffee';
 export const PASTRY_CATEGORY_ID = 'cat-pastry';
 
-export const CATEGORIES: SquareCatalogCategory[] = [
-  makeCategory({ id: COFFEE_CATEGORY_ID, category_data: { name: 'Coffee' } }),
-  makeCategory({ id: PASTRY_CATEGORY_ID, category_data: { name: 'Pastry' } }),
+export const CATEGORIES: Square.CatalogObject.Category[] = [
+  makeCategory({ id: COFFEE_CATEGORY_ID, categoryData: { name: 'Coffee' } }),
+  makeCategory({ id: PASTRY_CATEGORY_ID, categoryData: { name: 'Pastry' } }),
 ];
 
-export const ITEMS: SquareCatalogItem[] = [
+export const ITEMS: Square.CatalogObject.Item[] = [
   // Available everywhere.
   makeItem({
     id: 'item-latte',
-    present_at_all_locations: true,
-    item_data: {
+    presentAtAllLocations: true,
+    itemData: {
       name: 'Latte',
       description: 'Espresso with steamed milk',
-      category_id: COFFEE_CATEGORY_ID,
+      categoryId: COFFEE_CATEGORY_ID,
       variations: [
-        makeVariation({ id: 'var-latte', item_variation_data: { price_money: makeMoney(500) } }),
+        makeVariation({ id: 'var-latte', itemVariationData: { priceMoney: makeMoney(500) } }),
       ],
     },
   }),
   // Present at all locations, but explicitly absent at the airport.
   makeItem({
     id: 'item-drip',
-    present_at_all_locations: true,
-    absent_at_location_ids: [AIRPORT_LOCATION_ID],
-    item_data: {
+    presentAtAllLocations: true,
+    absentAtLocationIds: [AIRPORT_LOCATION_ID],
+    itemData: {
       name: 'Drip Coffee',
-      category_id: COFFEE_CATEGORY_ID,
+      categoryId: COFFEE_CATEGORY_ID,
       variations: [
-        makeVariation({ id: 'var-drip', item_variation_data: { price_money: makeMoney(300) } }),
+        makeVariation({ id: 'var-drip', itemVariationData: { priceMoney: makeMoney(300) } }),
       ],
     },
   }),
   // Single-location: only at downtown (proves the location filter).
   makeItem({
     id: 'item-croissant',
-    present_at_all_locations: false,
-    present_at_location_ids: [DOWNTOWN_LOCATION_ID],
-    item_data: {
+    presentAtAllLocations: false,
+    presentAtLocationIds: [DOWNTOWN_LOCATION_ID],
+    itemData: {
       name: 'Croissant',
-      category_id: PASTRY_CATEGORY_ID,
+      categoryId: PASTRY_CATEGORY_ID,
       variations: [
-        makeVariation({
-          id: 'var-croissant',
-          item_variation_data: { price_money: makeMoney(375) },
-        }),
+        makeVariation({ id: 'var-croissant', itemVariationData: { priceMoney: makeMoney(375) } }),
       ],
     },
   }),
 ];
+
+/** All catalog objects a mocked `catalog.list` page would yield, interleaved as Square returns them. */
+export const CATALOG_OBJECTS: Square.CatalogObject[] = [...CATEGORIES, ...ITEMS];

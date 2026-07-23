@@ -64,6 +64,13 @@ Reports and artifacts (`playwright-report/`, `test-results/`) are git-ignored.
 2. Create a **sandbox application**; copy the **sandbox access token** and base URL.
 3. Put them in `server/.env` (see `.env.example`). **Sandbox only — never a real merchant's production data.**
 4. Seed data (Square's seed or your own): aim for **2 locations**, **3–4 categories**, **6–10 items**, with **at least one item available at only one of the two locations** (to prove the location filter). For the time/day bonus, set up at least one category with limited hours.
+5. Confirm the wiring end-to-end (fetches locations + catalog from your sandbox):
+
+   ```bash
+   pnpm --filter @menuflow/server smoke:square
+   ```
+
+   It prints your location and item/category counts, or a clear error if credentials are wrong.
 
 ## Environment variables
 

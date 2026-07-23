@@ -1,106 +1,65 @@
 /**
- * Builders for Square's *raw wire shapes* — the objects `SquareService` receives
- * before it normalizes them into our response DTOs. Tests drive the availability,
- * money, and category-grouping logic through these so they stay declarative and DRY.
+ * Builders for the Square **SDK** objects `SquareService` receives (camelCase, bigint money) —
+ * the raw input to the boundary. Tests construct catalog/location fixtures declaratively and
+ * feed them through a mocked `SQUARE_CLIENT`. Only the fields MenuFlow reads are set (ISP).
  *
- * Only the subset of fields MenuFlow actually reads is modeled (never `any`); Square
- * returns more, but a consumer shouldn't depend on fields it never uses (ISP). When M2
- * lands the concrete `SquareService` internal models, extend these shapes in one place.
+ * (M2 note: these replaced the earlier snake_case wire-shape placeholders once the real SDK
+ * contract landed — the SDK deserializes to camelCase, so the builders now match reality.)
  */
+import { Square } from 'square';
 
-/** Square money: integer amount in the smallest currency unit (cents) + ISO currency. */
-export interface SquareMoney {
-  amount: number;
-  currency: string;
+const DEFAULT_CURRENCY: Square.Currency = 'USD';
+
+export function makeMoney(
+  amount: number,
+  currency: Square.Currency = DEFAULT_CURRENCY,
+): Square.Money {
+  return { amount: BigInt(amount), currency };
 }
 
-/** Fields shared by every Square catalog object that carries location availability. */
-export interface SquareAvailability {
-  present_at_all_locations: boolean;
-  present_at_location_ids?: string[];
-  absent_at_location_ids?: string[];
-}
-
-export interface SquareItemVariation {
-  type: 'ITEM_VARIATION';
-  id: string;
-  item_variation_data: {
-    name?: string;
-    price_money?: SquareMoney;
-  };
-}
-
-export interface SquareCatalogItem extends SquareAvailability {
-  type: 'ITEM';
-  id: string;
-  item_data: {
-    name: string;
-    description?: string;
-    category_id?: string;
-    variations?: SquareItemVariation[];
-  };
-}
-
-export interface SquareCatalogCategory extends SquareAvailability {
-  type: 'CATEGORY';
-  id: string;
-  category_data: {
-    name: string;
-  };
-}
-
-export interface SquareLocation {
-  id: string;
-  name: string;
-  timezone: string;
-  currency: string;
-  status: 'ACTIVE' | 'INACTIVE';
-}
-
-const DEFAULT_CURRENCY = 'USD';
-
-export function makeMoney(amount: number, currency: string = DEFAULT_CURRENCY): SquareMoney {
-  return { amount, currency };
-}
-
-export function makeVariation(overrides: Partial<SquareItemVariation> = {}): SquareItemVariation {
+export function makeVariation(
+  overrides: Partial<Square.CatalogObject.ItemVariation> = {},
+): Square.CatalogObject.ItemVariation {
+  const { itemVariationData, ...rest } = overrides;
   return {
     type: 'ITEM_VARIATION',
     id: 'var-default',
-    item_variation_data: { name: 'Regular', price_money: makeMoney(500) },
-    ...overrides,
+    itemVariationData: { name: 'Regular', priceMoney: makeMoney(500), ...itemVariationData },
+    ...rest,
   };
 }
 
-export function makeItem(overrides: Partial<SquareCatalogItem> = {}): SquareCatalogItem {
-  const { item_data, ...rest } = overrides;
+export function makeItem(
+  overrides: Partial<Square.CatalogObject.Item> = {},
+): Square.CatalogObject.Item {
+  const { itemData, ...rest } = overrides;
   return {
     type: 'ITEM',
     id: 'item-default',
-    present_at_all_locations: true,
-    item_data: {
+    presentAtAllLocations: true,
+    itemData: {
       name: 'Default Item',
       variations: [makeVariation()],
-      ...item_data,
+      ...itemData,
     },
     ...rest,
   };
 }
 
 export function makeCategory(
-  overrides: Partial<SquareCatalogCategory> = {},
-): SquareCatalogCategory {
-  const { category_data, ...rest } = overrides;
+  overrides: Partial<Square.CatalogObject.Category> = {},
+): Square.CatalogObject.Category {
+  const { categoryData, ...rest } = overrides;
   return {
     type: 'CATEGORY',
     id: 'cat-default',
-    present_at_all_locations: true,
-    category_data: { name: 'Default Category', ...category_data },
+    presentAtAllLocations: true,
+    categoryData: { name: 'Default Category', ...categoryData },
     ...rest,
   };
 }
 
-export function makeLocation(overrides: Partial<SquareLocation> = {}): SquareLocation {
+export function makeLocation(overrides: Partial<Square.Location> = {}): Square.Location {
   return {
     id: 'loc-default',
     name: 'Default Location',
