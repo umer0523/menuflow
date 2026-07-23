@@ -10,6 +10,8 @@ import {
   CATALOG_OBJECTS,
   DOWNTOWN_LOCATION_ID,
   ITEMS,
+  LATTE_IMAGE_ID,
+  LATTE_IMAGE_URL,
   TWO_LOCATIONS,
 } from '../../test/utils/square-fixtures';
 
@@ -92,6 +94,14 @@ describe('SquareService', () => {
 
       const drip = snapshot.items.find((item) => item.id === 'item-drip');
       expect(drip?.absentAtLocationIds).toEqual([AIRPORT_LOCATION_ID]);
+    });
+
+    it('resolves IMAGE objects into an imageId → url map', async () => {
+      client.catalog.list.mockResolvedValue(asPage(CATALOG_OBJECTS));
+
+      const snapshot = await service.getCatalog();
+
+      expect(snapshot.images).toEqual({ [LATTE_IMAGE_ID]: LATTE_IMAGE_URL });
     });
 
     it('caches the snapshot (no second Square call)', async () => {

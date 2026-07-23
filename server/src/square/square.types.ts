@@ -64,8 +64,13 @@ export interface SquareLocationModel {
   status: string;
 }
 
-/** A single normalized read of the Catalog: items + categories, pre-availability-filter. */
+/**
+ * A single normalized read of the Catalog: items + categories, pre-availability-filter, plus an
+ * `imageId → url` map so consumers (the item-detail view) resolve an item's `imageIds` without a
+ * second Square call. Populated from the IMAGE objects in the same paginated list read.
+ */
 export interface CatalogSnapshot {
   items: CatalogItemModel[];
   categories: CatalogCategoryModel[];
+  images: Record<string, string>;
 }

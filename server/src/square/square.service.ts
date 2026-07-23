@@ -6,7 +6,7 @@ import { ClientInternalError } from '../common/errors/client-internal.error';
 import { toMoney } from './money.util';
 import { SQUARE_CLIENT } from './square-client.provider';
 import { CATALOG_LIST_TYPES, SQUARE_CACHE } from './square.constants';
-import { isCatalogCategory, isCatalogItem, isItemVariation } from './square.guards';
+import { isCatalogCategory, isCatalogImage, isCatalogItem, isItemVariation } from './square.guards';
 import type {
   AvailabilityFields,
   AvailabilitySource,
@@ -58,6 +58,7 @@ export class SquareService {
       const page = await this.client.catalog.list({ types: CATALOG_LIST_TYPES });
       const items: CatalogItemModel[] = [];
       const categories: CatalogCategoryModel[] = [];
+      const images: Record<string, string> = {};
       // The SDK `Page` is async-iterable and follows pagination cursors transparently,
       // so this single loop consumes every page of the catalog.
       for await (const object of page) {
@@ -68,9 +69,15 @@ export class SquareService {
           if (category.id !== '') {
             categories.push(category);
           }
+        } else if (isCatalogImage(object)) {
+          const url = object.imageData?.url;
+          // Only keep images Square has actually generated a URL for; ids without one resolve away.
+          if (url) {
+            images[object.id] = url;
+          }
         }
       }
-      const snapshot: CatalogSnapshot = { items, categories };
+      const snapshot: CatalogSnapshot = { items, categories, images };
       this.catalogCache.set(SQUARE_CACHE.CATALOG_KEY, snapshot);
       return snapshot;
     } catch (error) {

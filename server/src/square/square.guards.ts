@@ -22,3 +22,7 @@ export function isItemVariation(
 ): object is Square.CatalogObject.ItemVariation {
   return object.type === SquareObjectType.ItemVariation;
 }
+
+export function isCatalogImage(object: Square.CatalogObject): object is Square.CatalogObject.Image {
+  return object.type === SquareObjectType.Image;
+}

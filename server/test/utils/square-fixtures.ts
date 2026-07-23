@@ -7,7 +7,14 @@
  */
 import type { Square } from 'square';
 
-import { makeCategory, makeItem, makeLocation, makeMoney, makeVariation } from './catalog-builders';
+import {
+  makeCategory,
+  makeImage,
+  makeItem,
+  makeLocation,
+  makeMoney,
+  makeVariation,
+} from './catalog-builders';
 
 export const DOWNTOWN_LOCATION_ID = 'loc-downtown';
 export const AIRPORT_LOCATION_ID = 'loc-airport';
@@ -25,8 +32,15 @@ export const CATEGORIES: Square.CatalogObject.Category[] = [
   makeCategory({ id: PASTRY_CATEGORY_ID, categoryData: { name: 'Pastry' } }),
 ];
 
+export const LATTE_IMAGE_ID = 'img-latte';
+export const LATTE_IMAGE_URL = 'https://square-catalog-sandbox.s3.amazonaws.com/latte.png';
+
+export const IMAGES: Square.CatalogObject.Image[] = [
+  makeImage({ id: LATTE_IMAGE_ID, imageData: { name: 'Latte', url: LATTE_IMAGE_URL } }),
+];
+
 export const ITEMS: Square.CatalogObject.Item[] = [
-  // Available everywhere.
+  // Available everywhere, with an image.
   makeItem({
     id: 'item-latte',
     presentAtAllLocations: true,
@@ -34,6 +48,7 @@ export const ITEMS: Square.CatalogObject.Item[] = [
       name: 'Latte',
       description: 'Espresso with steamed milk',
       categoryId: COFFEE_CATEGORY_ID,
+      imageIds: [LATTE_IMAGE_ID],
       variations: [
         makeVariation({ id: 'var-latte', itemVariationData: { priceMoney: makeMoney(500) } }),
       ],
@@ -68,4 +83,4 @@ export const ITEMS: Square.CatalogObject.Item[] = [
 ];
 
 /** All catalog objects a mocked `catalog.list` page would yield, interleaved as Square returns them. */
-export const CATALOG_OBJECTS: Square.CatalogObject[] = [...CATEGORIES, ...ITEMS];
+export const CATALOG_OBJECTS: Square.CatalogObject[] = [...CATEGORIES, ...ITEMS, ...IMAGES];

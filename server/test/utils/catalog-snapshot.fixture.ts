@@ -10,15 +10,25 @@ import {
   AIRPORT_LOCATION_ID,
   COFFEE_CATEGORY_ID,
   DOWNTOWN_LOCATION_ID,
+  LATTE_IMAGE_ID,
+  LATTE_IMAGE_URL,
   PASTRY_CATEGORY_ID,
 } from './square-fixtures';
 
-export { AIRPORT_LOCATION_ID, COFFEE_CATEGORY_ID, DOWNTOWN_LOCATION_ID, PASTRY_CATEGORY_ID };
+export {
+  AIRPORT_LOCATION_ID,
+  COFFEE_CATEGORY_ID,
+  DOWNTOWN_LOCATION_ID,
+  LATTE_IMAGE_ID,
+  LATTE_IMAGE_URL,
+  PASTRY_CATEGORY_ID,
+};
 
 const USD = 'USD';
 
-/** Latte — available at every location. */
+/** Latte — available at every location, with an image and two sizes (proves the variations list). */
 export const LATTE_PRICE = 500;
+export const LATTE_LARGE_PRICE = 600;
 /** Drip — present everywhere except explicitly absent at the airport. */
 export const DRIP_PRICE = 300;
 /** Croissant — present at downtown only (proves the single-location filter). */
@@ -47,9 +57,10 @@ export const CATALOG_SNAPSHOT: CatalogSnapshot = {
       name: 'Latte',
       description: 'Espresso with steamed milk',
       categoryId: COFFEE_CATEGORY_ID,
-      imageIds: [],
+      imageIds: [LATTE_IMAGE_ID],
       variations: [
-        { id: 'var-latte', name: 'Regular', price: { amount: LATTE_PRICE, currency: USD } },
+        { id: 'var-latte', name: 'Small', price: { amount: LATTE_PRICE, currency: USD } },
+        { id: 'var-latte-lg', name: 'Large', price: { amount: LATTE_LARGE_PRICE, currency: USD } },
       ],
       presentAtAllLocations: true,
       presentAtLocationIds: [],
@@ -80,4 +91,5 @@ export const CATALOG_SNAPSHOT: CatalogSnapshot = {
       absentAtLocationIds: [],
     },
   ],
+  images: { [LATTE_IMAGE_ID]: LATTE_IMAGE_URL },
 };

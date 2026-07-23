@@ -59,6 +59,18 @@ export function makeCategory(
   };
 }
 
+export function makeImage(
+  overrides: Partial<Square.CatalogObject.Image> = {},
+): Square.CatalogObject.Image {
+  const { imageData, ...rest } = overrides;
+  return {
+    type: 'IMAGE',
+    id: 'img-default',
+    imageData: { name: 'Default Image', url: 'https://example.com/default.png', ...imageData },
+    ...rest,
+  };
+}
+
 export function makeLocation(overrides: Partial<Square.Location> = {}): Square.Location {
   return {
     id: 'loc-default',
