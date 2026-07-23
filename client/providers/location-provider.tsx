@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import { STORAGE_KEYS } from '@/constants/storage.constants';
+import { readStorage, writeStorage } from '@/utils/safe-local-storage';
 
 interface LocationContextValue {
   /** The location the menu is scoped to; `null` until locations load and one is chosen. */
@@ -20,9 +21,10 @@ const LocationContext = createContext<LocationContextValue | null>(null);
 export function LocationProvider({ children }: { children: ReactNode }) {
   const [selectedLocationId, setSelected] = useState<string | null>(null);
 
-  // Restore on mount only (client-side) to avoid an SSR/localStorage hydration mismatch.
+  // Restore on mount only (client-side) to avoid an SSR/localStorage hydration mismatch. The value
+  // is validated by the consumer (against the loaded locations) before it's trusted.
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEYS.SELECTED_LOCATION);
+    const stored = readStorage(STORAGE_KEYS.SELECTED_LOCATION);
     if (stored) {
       setSelected(stored);
     }
@@ -30,7 +32,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
 
   const setSelectedLocationId = useCallback((id: string) => {
     setSelected(id);
-    window.localStorage.setItem(STORAGE_KEYS.SELECTED_LOCATION, id);
+    writeStorage(STORAGE_KEYS.SELECTED_LOCATION, id);
   }, []);
 
   return (
