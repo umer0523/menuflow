@@ -63,8 +63,11 @@ Reports and artifacts (`playwright-report/`, `test-results/`) are git-ignored.
 ## Square sandbox setup
 
 1. Create a free Square developer account → https://developer.squareup.com
-2. Create a **sandbox application**; copy the **sandbox access token** and base URL.
-3. Put them in `server/.env` (see `.env.example`). **Sandbox only — never a real merchant's production data.**
+2. Create an application, open its **Credentials** page, and make sure the **Sandbox** toggle (top of the page) is selected — then copy the **Sandbox access token**. Square credentials are environment-specific: a Production token against the sandbox base URL fails with `UNAUTHORIZED`.
+3. Put the token in `server/.env` (see `.env.example`). **Sandbox only — never a real merchant's production data.**
+
+> **About the base URL:** `https://connect.squareupsandbox.com` is Square's sandbox **API host**, not a website — opening it in a browser shows a 404 by design. The API lives under `/v2/*` (e.g. `GET /v2/locations`) and requires a bearer token; the backend's Square SDK client targets this host, which is exactly the SDK's own `SquareEnvironment.Sandbox` value.
+
 4. Seed data (Square's seed or your own): aim for **2 locations**, **3–4 categories**, **6–10 items**, with **at least one item available at only one of the two locations** (to prove the location filter). For the time/day bonus, set up at least one category with limited hours.
 5. Confirm the wiring end-to-end (fetches locations + catalog from your sandbox):
 
@@ -88,6 +91,16 @@ Reports and artifacts (`playwright-report/`, `test-results/`) are git-ignored.
 
 ---
 
-## Roadmap
+## Architecture & key decisions
 
-> _Candidate directions, to be prioritized as the project progresses:_ time-of-day/day-of-week availability, modifiers, search, cart with subtotal, inventory/out-of-stock, offline caching.
+- **Backend as a proxy + normalization layer.** Every Square call goes through the NestJS API; the browser never sees the Square token, and Square's loosely-typed shapes are normalized into our own typed response DTOs at the service boundary. Trade-off: one extra hop, in exchange for a secure token boundary and a single stable contract the client can trust.
+- **Strict layering with one Square touchpoint.** `Controller → Service → SquareService`; only `SquareService` talks to Square (SDK client injected via DI). That seam is what lets every test mock Square instead of hitting the sandbox.
+- **In-memory TTL cache instead of a database.** The scope is read-only browsing, so catalog/locations are cached for 60s in-process — location switching and category filtering never re-hit Square inside the window. Trade-off: process-local and best-effort (a miss just refetches); a DB/Redis would be over-engineering here.
+- **Availability computed server-side, in one place.** An item is visible at location `L` iff `(present_at_all_locations OR L ∈ present_at_location_ids) AND L ∉ absent_at_location_ids` — `absent` always wins. The grouped menu, category list, and flat item list are all projections of the same builder, so the three endpoints can never disagree.
+- **Money is never string-math.** Square's integer minor units + currency ride the wire untouched; the client is the only place prices become display strings (`Intl.NumberFormat`, respecting each currency's own fraction digits — so USD `500` → `$5.00` and JPY `500` → `¥500` both come out right).
+- **Generated API client.** The backend's Swagger spec generates typed React Query hooks (orval); a changed DTO breaks the client's typecheck instead of silently drifting. Trade-off: a regeneration step (`pnpm api:generate`) after contract changes.
+- **Two-tier testing.** Unit tests for the business rules and utilities; e2e that boots the real NestJS app with Square mocked at the `SquareService` boundary; Playwright journeys as a local development aid. A few well-chosen tests over exhaustive coverage.
+
+## What I'd build next
+
+> _Given another week, roughly in priority order:_ **time-of-day / day-of-week availability** (per-location timezone-aware filtering of out-of-window items), modifiers on the item detail view, full-text search across the visible menu, a cart with subtotal, inventory/out-of-stock surfacing, offline-friendly catalog caching.
