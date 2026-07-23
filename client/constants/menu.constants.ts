@@ -21,3 +21,11 @@ export const CATEGORY_FILTER = {
 
 /** Stable key for a category whose id is `null` (the Uncategorized bucket) — see `category-key.ts`. */
 export const UNCATEGORIZED_KEY = 'uncategorized';
+
+/** Item-detail view copy. */
+export const ITEM_DETAIL = {
+  NOT_FOUND: "This item isn't on the menu at this location.",
+  BACK: 'Back to menu',
+  OPTIONS_LABEL: 'Options',
+  NO_IMAGE: 'No image available',
+} as const;
