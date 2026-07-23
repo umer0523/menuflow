@@ -12,6 +12,7 @@ import {
   CATALOG_SNAPSHOT,
   COFFEE_CATEGORY_ID,
   DOWNTOWN_LOCATION_ID,
+  LATTE_IMAGE_URL,
 } from './utils/catalog-snapshot.fixture';
 
 describe('Catalog (e2e)', () => {
@@ -110,6 +111,43 @@ describe('Catalog (e2e)', () => {
         'Latte',
         'Drip Coffee',
       ]);
+    });
+  });
+
+  describe('GET /items/:id', () => {
+    it('returns item detail with resolved image URLs and variations', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/items/item-latte')
+        .query({ locationId: DOWNTOWN_LOCATION_ID })
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        id: 'item-latte',
+        name: 'Latte',
+        imageUrls: [LATTE_IMAGE_URL],
+      });
+      expect(response.body.variations.map((v: { name: string }) => v.name)).toEqual([
+        'Small',
+        'Large',
+      ]);
+    });
+
+    it('404s for an unknown item', async () => {
+      await request(app.getHttpServer())
+        .get('/items/item-missing')
+        .query({ locationId: DOWNTOWN_LOCATION_ID })
+        .expect(404);
+    });
+
+    it('404s for an item not visible at the location', async () => {
+      await request(app.getHttpServer())
+        .get('/items/item-croissant')
+        .query({ locationId: AIRPORT_LOCATION_ID })
+        .expect(404);
+    });
+
+    it('400s when locationId is missing', async () => {
+      await request(app.getHttpServer()).get('/items/item-latte').expect(400);
     });
   });
 

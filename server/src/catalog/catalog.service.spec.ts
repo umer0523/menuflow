@@ -4,12 +4,15 @@ import {
   createSquareServiceMock,
   type SquareServiceMock,
 } from '../../test/utils/square-service.mock';
+import { ClientNotFoundError } from '../common/errors/client-not-found.error';
 import {
   AIRPORT_LOCATION_ID,
   CATALOG_SNAPSHOT,
   COFFEE_CATEGORY_ID,
   CROISSANT_PRICE,
   DOWNTOWN_LOCATION_ID,
+  LATTE_IMAGE_URL,
+  LATTE_LARGE_PRICE,
   LATTE_PRICE,
   PASTRY_CATEGORY_ID,
 } from '../../test/utils/catalog-snapshot.fixture';
@@ -84,6 +87,46 @@ describe('CatalogService', () => {
     it('narrows to a single category when categoryId is given', async () => {
       const coffee = await service.getItems(DOWNTOWN_LOCATION_ID, COFFEE_CATEGORY_ID);
       expect(coffee.map((item) => item.name)).toEqual(['Latte', 'Drip Coffee']);
+    });
+  });
+
+  describe('getItem (detail)', () => {
+    it('returns the item with resolved image URLs, the "from" price, and all variations', async () => {
+      const latte = await service.getItem('item-latte', DOWNTOWN_LOCATION_ID);
+
+      expect(latte).toMatchObject({
+        id: 'item-latte',
+        name: 'Latte',
+        description: 'Espresso with steamed milk',
+        price: { amount: LATTE_PRICE, currency: 'USD' },
+        imageUrls: [LATTE_IMAGE_URL],
+      });
+      expect(latte.variations).toEqual([
+        { id: 'var-latte', name: 'Small', price: { amount: LATTE_PRICE, currency: 'USD' } },
+        {
+          id: 'var-latte-lg',
+          name: 'Large',
+          price: { amount: LATTE_LARGE_PRICE, currency: 'USD' },
+        },
+      ]);
+    });
+
+    it('resolves no image URLs for an item without images', async () => {
+      const drip = await service.getItem('item-drip', DOWNTOWN_LOCATION_ID);
+      expect(drip.imageUrls).toEqual([]);
+    });
+
+    it('throws NotFound for an unknown id', async () => {
+      await expect(service.getItem('item-missing', DOWNTOWN_LOCATION_ID)).rejects.toBeInstanceOf(
+        ClientNotFoundError,
+      );
+    });
+
+    it('throws NotFound when the item is not visible at the location', async () => {
+      // Croissant is downtown-only, so it isn't on the airport's menu.
+      await expect(service.getItem('item-croissant', AIRPORT_LOCATION_ID)).rejects.toBeInstanceOf(
+        ClientNotFoundError,
+      );
     });
   });
 });

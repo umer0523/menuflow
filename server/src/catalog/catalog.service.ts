@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 
+import { ClientNotFoundError } from '../common/errors/client-not-found.error';
 import { isItemVisibleAtLocation } from '../square/availability.util';
 import { resolveItemPrice } from '../square/money.util';
 import { SquareService } from '../square/square.service';
-import type { CatalogItemModel, MoneyModel } from '../square/square.types';
+import type { CatalogItemModel, ItemVariationModel, MoneyModel } from '../square/square.types';
 import { UNCATEGORIZED } from './catalog.constants';
 import { CategoryResponseDto } from './dto/category-response.dto';
+import { ItemDetailResponseDto } from './dto/item-detail-response.dto';
 import { ItemResponseDto } from './dto/item-response.dto';
+import { ItemVariationResponseDto } from './dto/item-variation-response.dto';
 import { MenuCategoryResponseDto } from './dto/menu-category-response.dto';
 import { MoneyResponseDto } from './dto/money-response.dto';
 
@@ -40,6 +43,26 @@ export class CatalogService {
       .filter((item) => isItemVisibleAtLocation(item, locationId))
       .filter((item) => categoryId === undefined || item.categoryId === categoryId)
       .map((item) => this.toItemDto(item));
+  }
+
+  /**
+   * Item detail (core requirement #5). 404s when the id is unknown **or** the item isn't visible at
+   * the location — an item off this location's menu isn't reachable here, consistent with the list
+   * endpoints. Resolves image URLs from the snapshot's `imageId → url` map (no extra Square call).
+   */
+  async getItem(itemId: string, locationId: string): Promise<ItemDetailResponseDto> {
+    const snapshot = await this.square.getCatalog();
+    const item = snapshot.items.find((candidate) => candidate.id === itemId);
+    if (!item || !isItemVisibleAtLocation(item, locationId)) {
+      throw new ClientNotFoundError(`Item ${itemId} was not found`);
+    }
+    return {
+      ...this.toItemDto(item),
+      imageUrls: item.imageIds
+        .map((imageId) => snapshot.images[imageId])
+        .filter((url): url is string => url !== undefined),
+      variations: item.variations.map((variation) => this.toVariationDto(variation)),
+    };
   }
 
   private async buildMenu(locationId: string): Promise<MenuCategoryResponseDto[]> {
@@ -97,6 +120,14 @@ export class CatalogService {
       categoryId: item.categoryId,
       price: this.toMoneyDto(resolveItemPrice(item)),
       imageIds: item.imageIds,
+    };
+  }
+
+  private toVariationDto(variation: ItemVariationModel): ItemVariationResponseDto {
+    return {
+      id: variation.id,
+      name: variation.name,
+      price: this.toMoneyDto(variation.price),
     };
   }
 
