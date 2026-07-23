@@ -15,4 +15,5 @@ export interface MenuCategoryView {
   id: string | null;
   name: string;
   items: MenuItemView[];
+  available: boolean;
 }

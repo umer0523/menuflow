@@ -7,6 +7,8 @@ import { SQUARE_CLIENT } from './square-client.provider';
 import { SquareService } from './square.service';
 import {
   AIRPORT_LOCATION_ID,
+  BREAKFAST_CATEGORY_ID,
+  BREAKFAST_PERIOD_ID,
   CATALOG_OBJECTS,
   DOWNTOWN_LOCATION_ID,
   ITEMS,
@@ -82,7 +84,8 @@ describe('SquareService', () => {
       const snapshot = await service.getCatalog();
 
       expect(snapshot.items).toHaveLength(ITEMS.length);
-      expect(snapshot.categories).toHaveLength(2);
+      // Coffee + Pastry + Breakfast (the availability-period-bearing category).
+      expect(snapshot.categories).toHaveLength(3);
 
       const croissant = snapshot.items.find((item) => item.id === 'item-croissant');
       expect(croissant).toMatchObject({
@@ -102,6 +105,28 @@ describe('SquareService', () => {
       const snapshot = await service.getCatalog();
 
       expect(snapshot.images).toEqual({ [LATTE_IMAGE_ID]: LATTE_IMAGE_URL });
+    });
+
+    it('maps AVAILABILITY_PERIOD objects into the availabilityPeriods map', async () => {
+      client.catalog.list.mockResolvedValue(asPage(CATALOG_OBJECTS));
+
+      const snapshot = await service.getCatalog();
+
+      expect(snapshot.availabilityPeriods[BREAKFAST_PERIOD_ID]).toMatchObject({
+        id: BREAKFAST_PERIOD_ID,
+        dayOfWeek: 'MON',
+        startLocalTime: '07:00:00',
+        endLocalTime: '11:00:00',
+      });
+    });
+
+    it('maps availabilityPeriodIds onto the category model', async () => {
+      client.catalog.list.mockResolvedValue(asPage(CATALOG_OBJECTS));
+
+      const snapshot = await service.getCatalog();
+
+      const breakfast = snapshot.categories.find((c) => c.id === BREAKFAST_CATEGORY_ID);
+      expect(breakfast?.availabilityPeriodIds).toEqual([BREAKFAST_PERIOD_ID]);
     });
 
     it('caches the snapshot (no second Square call)', async () => {

@@ -54,6 +54,15 @@ export interface CatalogItemModel extends AvailabilityFields {
 export interface CatalogCategoryModel extends AvailabilityFields {
   id: string;
   name: string;
+  availabilityPeriodIds: string[];
+}
+
+/** A normalized `CatalogAvailabilityPeriod` — time-of-day window for a category. */
+export interface AvailabilityPeriodModel {
+  id: string;
+  startLocalTime: string;
+  endLocalTime: string;
+  dayOfWeek: string;
 }
 
 export interface SquareLocationModel {
@@ -73,4 +82,5 @@ export interface CatalogSnapshot {
   items: CatalogItemModel[];
   categories: CatalogCategoryModel[];
   images: Record<string, string>;
+  availabilityPeriods: Record<string, AvailabilityPeriodModel>;
 }

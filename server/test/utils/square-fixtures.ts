@@ -8,6 +8,7 @@
 import type { Square } from 'square';
 
 import {
+  makeAvailabilityPeriod,
   makeCategory,
   makeImage,
   makeItem,
@@ -82,5 +83,26 @@ export const ITEMS: Square.CatalogObject.Item[] = [
   }),
 ];
 
+export const BREAKFAST_PERIOD_ID = 'period-breakfast-mon';
+export const BREAKFAST_CATEGORY_ID = 'cat-breakfast';
+
+export const AVAILABILITY_PERIODS: Square.CatalogObject.AvailabilityPeriod[] = [
+  makeAvailabilityPeriod({
+    id: BREAKFAST_PERIOD_ID,
+    availabilityPeriodData: { dayOfWeek: 'MON', startLocalTime: '07:00:00', endLocalTime: '11:00:00' },
+  }),
+];
+
+export const BREAKFAST_CATEGORY: Square.CatalogObject.Category = makeCategory({
+  id: BREAKFAST_CATEGORY_ID,
+  categoryData: { name: 'Breakfast', availabilityPeriodIds: [BREAKFAST_PERIOD_ID] },
+});
+
 /** All catalog objects a mocked `catalog.list` page would yield, interleaved as Square returns them. */
-export const CATALOG_OBJECTS: Square.CatalogObject[] = [...CATEGORIES, ...ITEMS, ...IMAGES];
+export const CATALOG_OBJECTS: Square.CatalogObject[] = [
+  ...CATEGORIES,
+  BREAKFAST_CATEGORY,
+  ...ITEMS,
+  ...IMAGES,
+  ...AVAILABILITY_PERIODS,
+];

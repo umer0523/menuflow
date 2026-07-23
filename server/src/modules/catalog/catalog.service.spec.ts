@@ -15,7 +15,9 @@ import {
   LATTE_LARGE_PRICE,
   LATTE_PRICE,
   PASTRY_CATEGORY_ID,
+  SNAPSHOT_LOCATIONS,
 } from '../../../test/utils/catalog-snapshot.fixture';
+import type { AvailabilityPeriodModel, CatalogSnapshot } from '../../square/square.types';
 
 describe('CatalogService', () => {
   let square: SquareServiceMock;
@@ -24,6 +26,7 @@ describe('CatalogService', () => {
   beforeEach(() => {
     square = createSquareServiceMock();
     square.getCatalog.mockResolvedValue(CATALOG_SNAPSHOT);
+    square.getLocations.mockResolvedValue(SNAPSHOT_LOCATIONS);
     // Typed to the real contract via the mock; the cast bridges the Pick<> surface to the class.
     service = new CatalogService(square as unknown as SquareService);
   });
@@ -38,6 +41,57 @@ describe('CatalogService', () => {
       expect(coffee?.items.map((item) => item.name)).toEqual(['Latte', 'Drip Coffee']);
       // The single-location croissant is visible at downtown.
       expect(pastry?.items.map((item) => item.name)).toEqual(['Croissant']);
+    });
+
+    it('marks categories with no availability periods as available: true', async () => {
+      const menu = await service.getCatalog(DOWNTOWN_LOCATION_ID);
+      expect(menu.every((group) => group.available)).toBe(true);
+    });
+
+    it('marks a time-limited category available: false when outside its window', async () => {
+      const PERIOD_ID = 'period-breakfast';
+      const breakfastPeriod: AvailabilityPeriodModel = {
+        id: PERIOD_ID,
+        // SUN window — test will always run on a non-Sunday in CI (and if it does run Sunday,
+        // the start/end window of 00:00:00–00:01:00 makes false practically guaranteed).
+        dayOfWeek: 'SUN',
+        startLocalTime: '00:00:00',
+        endLocalTime: '00:01:00',
+      };
+      const snapshotWithBreakfast: CatalogSnapshot = {
+        ...CATALOG_SNAPSHOT,
+        categories: [
+          ...CATALOG_SNAPSHOT.categories,
+          {
+            id: 'cat-breakfast',
+            name: 'Breakfast',
+            presentAtAllLocations: true,
+            presentAtLocationIds: [],
+            absentAtLocationIds: [],
+            availabilityPeriodIds: [PERIOD_ID],
+          },
+        ],
+        items: [
+          ...CATALOG_SNAPSHOT.items,
+          {
+            id: 'item-oatmeal',
+            name: 'Oatmeal',
+            categoryId: 'cat-breakfast',
+            imageIds: [],
+            variations: [{ id: 'var-oatmeal', price: { amount: 650, currency: 'USD' } }],
+            presentAtAllLocations: true,
+            presentAtLocationIds: [],
+            absentAtLocationIds: [],
+          },
+        ],
+        availabilityPeriods: { [PERIOD_ID]: breakfastPeriod },
+      };
+      square.getCatalog.mockResolvedValue(snapshotWithBreakfast);
+
+      const menu = await service.getCatalog(DOWNTOWN_LOCATION_ID);
+
+      const breakfast = menu.find((g) => g.id === 'cat-breakfast');
+      expect(breakfast?.available).toBe(false);
     });
 
     it('applies the availability rule and hides categories left empty at the airport', async () => {

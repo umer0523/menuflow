@@ -13,7 +13,9 @@ import {
   COFFEE_CATEGORY_ID,
   DOWNTOWN_LOCATION_ID,
   LATTE_IMAGE_URL,
+  SNAPSHOT_LOCATIONS,
 } from './utils/catalog-snapshot.fixture';
+import type { CatalogSnapshot } from '../src/square/square.types';
 
 describe('Catalog (e2e)', () => {
   let app: INestApplication;
@@ -22,6 +24,7 @@ describe('Catalog (e2e)', () => {
   beforeEach(async () => {
     square = createSquareServiceMock();
     square.getCatalog.mockResolvedValue(CATALOG_SNAPSHOT);
+    square.getLocations.mockResolvedValue(SNAPSHOT_LOCATIONS);
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(SquareService)
       .useValue(square)
@@ -72,6 +75,67 @@ describe('Catalog (e2e)', () => {
 
     it('rejects a request missing the required locationId', async () => {
       await request(app.getHttpServer()).get('/catalog').expect(400);
+    });
+
+    it('includes available: true on categories without availability periods', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/catalog')
+        .query({ locationId: DOWNTOWN_LOCATION_ID })
+        .expect(200);
+
+      expect(response.body.every((group: { available: boolean }) => group.available)).toBe(true);
+    });
+
+    it('includes available: false for a time-limited category outside its window', async () => {
+      // Use dayOfWeek: 'SUN' with a 1-minute window at midnight to make available: false
+      // deterministic in CI regardless of what day and time the test runs.
+      const PERIOD_ID = 'period-e2e-breakfast';
+      const snapshotWithBreakfast: CatalogSnapshot = {
+        ...CATALOG_SNAPSHOT,
+        categories: [
+          ...CATALOG_SNAPSHOT.categories,
+          {
+            id: 'cat-e2e-breakfast',
+            name: 'E2E Breakfast',
+            presentAtAllLocations: true,
+            presentAtLocationIds: [],
+            absentAtLocationIds: [],
+            availabilityPeriodIds: [PERIOD_ID],
+          },
+        ],
+        items: [
+          ...CATALOG_SNAPSHOT.items,
+          {
+            id: 'item-e2e-oatmeal',
+            name: 'E2E Oatmeal',
+            categoryId: 'cat-e2e-breakfast',
+            imageIds: [],
+            variations: [{ id: 'var-e2e-oatmeal', price: { amount: 650, currency: 'USD' } }],
+            presentAtAllLocations: true,
+            presentAtLocationIds: [],
+            absentAtLocationIds: [],
+          },
+        ],
+        availabilityPeriods: {
+          [PERIOD_ID]: {
+            id: PERIOD_ID,
+            dayOfWeek: 'SUN',
+            startLocalTime: '00:00:00',
+            endLocalTime: '00:01:00',
+          },
+        },
+      };
+      square.getCatalog.mockResolvedValue(snapshotWithBreakfast);
+
+      const response = await request(app.getHttpServer())
+        .get('/catalog')
+        .query({ locationId: DOWNTOWN_LOCATION_ID })
+        .expect(200);
+
+      const breakfast = response.body.find(
+        (g: { name: string }) => g.name === 'E2E Breakfast',
+      ) as { available: boolean } | undefined;
+      expect(breakfast?.available).toBe(false);
     });
   });
 

@@ -8,6 +8,7 @@ const CATEGORIES: MenuCategoryResponseDto[] = [
   {
     id: 'cat-coffee',
     name: 'Coffee',
+    available: true,
     items: [
       {
         id: 'item-latte',
@@ -43,5 +44,10 @@ describe('toMenuView', () => {
       .flatMap((category) => category.items)
       .find((item) => item.name === 'Tap Water');
     expect(water?.priceLabel).toBeNull();
+  });
+
+  it('threads the category availability flag through to the view model', () => {
+    const view = toMenuView([{ ...CATEGORIES[0], available: false }]);
+    expect(view[0]?.available).toBe(false);
   });
 });

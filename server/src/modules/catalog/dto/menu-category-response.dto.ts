@@ -11,4 +11,11 @@ import { ItemResponseDto } from './item-response.dto';
 export class MenuCategoryResponseDto extends CategoryResponseDto {
   @ApiProperty({ type: [ItemResponseDto], description: 'Items visible at the requested location.' })
   items!: ItemResponseDto[];
+
+  @ApiProperty({
+    description:
+      'Whether this category is currently orderable based on its time-of-day / day-of-week ' +
+      'periods evaluated in the location timezone. Always true for categories with no periods.',
+  })
+  available!: boolean;
 }

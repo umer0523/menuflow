@@ -31,6 +31,7 @@ const MENU: MenuCategoryResponseDto[] = [
   {
     id: 'cat-coffee',
     name: 'Coffee',
+    available: true,
     items: [
       { id: 'item-latte', name: 'Latte', price: { amount: 500, currency: 'USD' }, imageIds: [] },
     ],
@@ -38,6 +39,7 @@ const MENU: MenuCategoryResponseDto[] = [
   {
     id: 'cat-pastry',
     name: 'Pastry',
+    available: true,
     items: [
       {
         id: 'item-croissant',
@@ -70,5 +72,21 @@ describe('MenuBrowser filtering', () => {
     // Only the Pastry category's items remain.
     expect(screen.queryByText('Latte')).not.toBeInTheDocument();
     expect(screen.getByText('Croissant')).toBeInTheDocument();
+  });
+
+  it('hides a category that is not currently available (time-of-day)', () => {
+    useCatalogMock.mockReturnValue(
+      mockCatalogQuery({
+        data: [MENU[0], { ...MENU[1], available: false }],
+      }),
+    );
+
+    render(<MenuBrowser />);
+
+    // The available Coffee category shows; the out-of-window Pastry category is hidden entirely,
+    // including from the category filter (only one category left → no filter rendered).
+    expect(screen.getByText('Latte')).toBeInTheDocument();
+    expect(screen.queryByText('Croissant')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Pastry' })).not.toBeInTheDocument();
   });
 });

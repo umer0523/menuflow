@@ -16,4 +16,4 @@ export const SQUARE_CACHE = {
  * Catalog list is filtered server-side to only the object types MenuFlow renders. Images are
  * included so the item-detail view can resolve `imageIds` → URLs from the same cached read.
  */
-export const CATALOG_LIST_TYPES = `${SquareObjectType.Item},${SquareObjectType.Category},${SquareObjectType.Image}`;
+export const CATALOG_LIST_TYPES = `${SquareObjectType.Item},${SquareObjectType.Category},${SquareObjectType.Image},${SquareObjectType.AvailabilityPeriod}`;

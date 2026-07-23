@@ -26,3 +26,9 @@ export function isItemVariation(
 export function isCatalogImage(object: Square.CatalogObject): object is Square.CatalogObject.Image {
   return object.type === SquareObjectType.Image;
 }
+
+export function isCatalogAvailabilityPeriod(
+  object: Square.CatalogObject,
+): object is Square.CatalogObject.AvailabilityPeriod {
+  return object.type === SquareObjectType.AvailabilityPeriod;
+}

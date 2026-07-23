@@ -4,4 +4,5 @@ export enum SquareObjectType {
   Category = 'CATEGORY',
   ItemVariation = 'ITEM_VARIATION',
   Image = 'IMAGE',
+  AvailabilityPeriod = 'AVAILABILITY_PERIOD',
 }

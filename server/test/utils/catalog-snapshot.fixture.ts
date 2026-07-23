@@ -4,7 +4,7 @@
  * SDK-level `square-fixtures.ts` (two locations, two categories, a single-location item) and reuses
  * its id constants, so the two tiers stay in lockstep without duplicating the scenario's identity.
  */
-import type { CatalogSnapshot } from '../../src/square/square.types';
+import type { CatalogSnapshot, SquareLocationModel } from '../../src/square/square.types';
 
 import {
   AIRPORT_LOCATION_ID,
@@ -26,6 +26,28 @@ export {
 
 const USD = 'USD';
 
+/**
+ * Normalized `SquareLocationModel[]` as `SquareService.getLocations()` returns them (post-mapping) —
+ * the shape `CatalogService` reads to resolve a location's timezone for time-of-day availability.
+ * Distinct from the SDK-level `TWO_LOCATIONS` in `square-fixtures.ts`, which is the raw input.
+ */
+export const SNAPSHOT_LOCATIONS: SquareLocationModel[] = [
+  {
+    id: DOWNTOWN_LOCATION_ID,
+    name: 'Downtown',
+    timezone: 'America/New_York',
+    currency: USD,
+    status: 'ACTIVE',
+  },
+  {
+    id: AIRPORT_LOCATION_ID,
+    name: 'Airport',
+    timezone: 'America/Chicago',
+    currency: USD,
+    status: 'ACTIVE',
+  },
+];
+
 /** Latte — available at every location, with an image and two sizes (proves the variations list). */
 export const LATTE_PRICE = 500;
 export const LATTE_LARGE_PRICE = 600;
@@ -42,6 +64,7 @@ export const CATALOG_SNAPSHOT: CatalogSnapshot = {
       presentAtAllLocations: true,
       presentAtLocationIds: [],
       absentAtLocationIds: [],
+      availabilityPeriodIds: [],
     },
     {
       id: PASTRY_CATEGORY_ID,
@@ -49,6 +72,7 @@ export const CATALOG_SNAPSHOT: CatalogSnapshot = {
       presentAtAllLocations: true,
       presentAtLocationIds: [],
       absentAtLocationIds: [],
+      availabilityPeriodIds: [],
     },
   ],
   items: [
@@ -92,4 +116,5 @@ export const CATALOG_SNAPSHOT: CatalogSnapshot = {
     },
   ],
   images: { [LATTE_IMAGE_ID]: LATTE_IMAGE_URL },
+  availabilityPeriods: {},
 };

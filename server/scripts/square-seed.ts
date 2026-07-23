@@ -56,6 +56,7 @@ const SEED_CATEGORIES: ReadonlyArray<{ key: string; name: string }> = [
   { key: 'pastries', name: 'Pastries' },
   { key: 'sandwiches', name: 'Sandwiches' },
   { key: 'seasonal', name: 'Seasonal' },
+  { key: 'breakfast', name: 'Breakfast' },
 ];
 
 const SEED_ITEMS: ReadonlyArray<SeedItem> = [
@@ -123,14 +124,47 @@ const SEED_ITEMS: ReadonlyArray<SeedItem> = [
     categoryKey: 'seasonal',
     variations: [{ name: 'Regular', cents: 500 }],
   },
+  {
+    key: 'oatmeal',
+    name: 'Steel-Cut Oatmeal',
+    description: 'Served with brown sugar and fresh berries. Available 7–11 AM.',
+    categoryKey: 'breakfast',
+    variations: [{ name: 'Regular', cents: 650 }],
+  },
+  {
+    key: 'avocado-toast',
+    name: 'Avocado Toast',
+    description: 'Multigrain with smashed avocado and everything seasoning. Available 7–11 AM.',
+    categoryKey: 'breakfast',
+    variations: [{ name: 'Regular', cents: 875 }],
+  },
 ];
 
-function toCategoryObject(category: { key: string; name: string }): Square.CatalogObject {
+const DAYS_OF_WEEK = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] as const;
+
+/** One `AVAILABILITY_PERIOD` object per day for the Breakfast window (07:00–11:00, every day). */
+const BREAKFAST_PERIOD_OBJECTS: Square.CatalogObject[] = DAYS_OF_WEEK.map((day) => ({
+  type: 'AVAILABILITY_PERIOD',
+  id: `#avail-breakfast-${day.toLowerCase()}`,
+  availabilityPeriodData: { dayOfWeek: day, startLocalTime: '07:00:00', endLocalTime: '11:00:00' },
+}));
+
+const BREAKFAST_PERIOD_IDS: string[] = DAYS_OF_WEEK.map(
+  (day) => `#avail-breakfast-${day.toLowerCase()}`,
+);
+
+function toCategoryObject(
+  category: { key: string; name: string },
+  availabilityPeriodIds: string[] = [],
+): Square.CatalogObject {
   return {
     type: 'CATEGORY',
     id: `#${category.key}`,
     presentAtAllLocations: true,
-    categoryData: { name: category.name },
+    categoryData: {
+      name: category.name,
+      ...(availabilityPeriodIds.length > 0 ? { availabilityPeriodIds } : {}),
+    },
   };
 }
 
@@ -194,7 +228,10 @@ async function seedCatalog(
     return;
   }
   const objects: Square.CatalogObject[] = [
-    ...SEED_CATEGORIES.map(toCategoryObject),
+    ...BREAKFAST_PERIOD_OBJECTS,
+    ...SEED_CATEGORIES.map((cat) =>
+      toCategoryObject(cat, cat.key === 'breakfast' ? BREAKFAST_PERIOD_IDS : []),
+    ),
     ...SEED_ITEMS.map((item) => toItemObject(item, secondLocationId)),
   ];
   await client.catalog.batchUpsert({
@@ -202,8 +239,9 @@ async function seedCatalog(
     batches: [{ objects }],
   });
   logger.log(
-    `Seeded ${SEED_CATEGORIES.length} categories and ${SEED_ITEMS.length} items ` +
-      `(1 absent at the second location, 1 exclusive to it).`,
+    `Seeded ${BREAKFAST_PERIOD_OBJECTS.length} availability periods, ` +
+      `${SEED_CATEGORIES.length} categories, and ${SEED_ITEMS.length} items ` +
+      `(1 absent at the second location, 1 exclusive to it, 2 breakfast-only).`,
   );
 }
 

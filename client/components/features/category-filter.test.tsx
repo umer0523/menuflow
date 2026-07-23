@@ -8,8 +8,8 @@ import type { MenuCategoryView } from '@/lib/catalog/menu-view.types';
 import { CategoryFilter } from './category-filter';
 
 const CATEGORIES: MenuCategoryView[] = [
-  { id: 'cat-coffee', name: 'Coffee', items: [] },
-  { id: 'cat-pastry', name: 'Pastry', items: [] },
+  { id: 'cat-coffee', name: 'Coffee', available: true, items: [] },
+  { id: 'cat-pastry', name: 'Pastry', available: true, items: [] },
 ];
 
 describe('CategoryFilter', () => {

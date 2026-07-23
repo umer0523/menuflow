@@ -26,7 +26,10 @@ const MIN_CATEGORIES_FOR_FILTER = 2;
 export function MenuBrowser() {
   const { selectedLocationId } = useSelectedLocation();
   const { data, isPending, isError, error, refetch } = useCatalog(selectedLocationId);
-  const categories = useMemo(() => (data ? toMenuView(data) : []), [data]);
+  const categories = useMemo(
+    () => (data ? toMenuView(data).filter((c) => c.available) : []),
+    [data],
+  );
   const { selectedKey, setSelectedKey, filteredCategories } = useCategoryFilter(categories);
 
   if (isPending) {

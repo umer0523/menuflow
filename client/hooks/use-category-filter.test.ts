@@ -10,6 +10,7 @@ function category(id: string, name: string): MenuCategoryView {
   return {
     id,
     name,
+    available: true,
     items: [{ id: `${id}-item`, name: `${name} item`, priceLabel: null }],
   };
 }

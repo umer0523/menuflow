@@ -13,6 +13,7 @@ export function toMenuView(categories: MenuCategoryResponseDto[]): MenuCategoryV
     id: category.id,
     name: category.name,
     items: category.items.map(toItemView),
+    available: category.available,
   }));
 }
 

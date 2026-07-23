@@ -81,3 +81,20 @@ export function makeLocation(overrides: Partial<Square.Location> = {}): Square.L
     ...overrides,
   };
 }
+
+export function makeAvailabilityPeriod(
+  overrides: Partial<Square.CatalogObject.AvailabilityPeriod> = {},
+): Square.CatalogObject.AvailabilityPeriod {
+  const { availabilityPeriodData, ...rest } = overrides;
+  return {
+    type: 'AVAILABILITY_PERIOD',
+    id: 'period-default',
+    availabilityPeriodData: {
+      dayOfWeek: 'MON',
+      startLocalTime: '08:00:00',
+      endLocalTime: '11:00:00',
+      ...availabilityPeriodData,
+    },
+    ...rest,
+  };
+}

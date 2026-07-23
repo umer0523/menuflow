@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { ClientNotFoundError } from '../../common/errors/client-not-found.error';
-import { isItemVisibleAtLocation } from '../../square/availability.util';
+import { isAvailableNow, isItemVisibleAtLocation } from '../../square/availability.util';
 import { resolveItemPrice } from '../../square/money.util';
 import { SquareService } from '../../square/square.service';
 import type { CatalogItemModel, ItemVariationModel, MoneyModel } from '../../square/square.types';
@@ -66,7 +66,15 @@ export class CatalogService {
   }
 
   private async buildMenu(locationId: string): Promise<MenuCategoryResponseDto[]> {
-    const snapshot = await this.square.getCatalog();
+    // Both calls hit the TTL cache on the hot path; Promise.all keeps cold misses concurrent.
+    const [snapshot, locations] = await Promise.all([
+      this.square.getCatalog(),
+      this.square.getLocations(),
+    ]);
+    // Unknown locationId (e.g. race between deletion and cache refresh) → UTC fallback so all
+    // categories default to available: true rather than throwing.
+    const timezone = locations.find((l) => l.id === locationId)?.timezone ?? 'UTC';
+
     const visibleItems = snapshot.items.filter((item) => isItemVisibleAtLocation(item, locationId));
     const itemsByCategory = this.groupByCategory(visibleItems);
     const knownCategoryIds = new Set(snapshot.categories.map((category) => category.id));
@@ -80,6 +88,11 @@ export class CatalogService {
           id: category.id,
           name: category.name,
           items: items.map((i) => this.toItemDto(i)),
+          available: isAvailableNow(
+            category.availabilityPeriodIds,
+            snapshot.availabilityPeriods,
+            timezone,
+          ),
         });
       }
     }
@@ -93,6 +106,7 @@ export class CatalogService {
         id: UNCATEGORIZED.id,
         name: UNCATEGORIZED.name,
         items: orphans.map((item) => this.toItemDto(item)),
+        available: true,
       });
     }
 

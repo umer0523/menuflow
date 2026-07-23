@@ -6,9 +6,16 @@ import { ClientInternalError } from '../common/errors/client-internal.error';
 import { toMoney } from './money.util';
 import { SQUARE_CLIENT } from './square-client.provider';
 import { CATALOG_LIST_TYPES, SQUARE_CACHE } from './square.constants';
-import { isCatalogCategory, isCatalogImage, isCatalogItem, isItemVariation } from './square.guards';
+import {
+  isCatalogAvailabilityPeriod,
+  isCatalogCategory,
+  isCatalogImage,
+  isCatalogItem,
+  isItemVariation,
+} from './square.guards';
 import type {
   AvailabilityFields,
+  AvailabilityPeriodModel,
   AvailabilitySource,
   CatalogCategoryModel,
   CatalogItemModel,
@@ -59,6 +66,7 @@ export class SquareService {
       const items: CatalogItemModel[] = [];
       const categories: CatalogCategoryModel[] = [];
       const images: Record<string, string> = {};
+      const availabilityPeriods: Record<string, AvailabilityPeriodModel> = {};
       // The SDK `Page` is async-iterable and follows pagination cursors transparently,
       // so this single loop consumes every page of the catalog.
       for await (const object of page) {
@@ -75,9 +83,14 @@ export class SquareService {
           if (url) {
             images[object.id] = url;
           }
+        } else if (isCatalogAvailabilityPeriod(object)) {
+          const period = this.mapAvailabilityPeriod(object);
+          if (period !== null) {
+            availabilityPeriods[period.id] = period;
+          }
         }
       }
-      const snapshot: CatalogSnapshot = { items, categories, images };
+      const snapshot: CatalogSnapshot = { items, categories, images, availabilityPeriods };
       this.catalogCache.set(SQUARE_CACHE.CATALOG_KEY, snapshot);
       return snapshot;
     } catch (error) {
@@ -120,7 +133,23 @@ export class SquareService {
       // Category `id` is optional in the SDK; empty-id categories are dropped by the caller.
       id: object.id ?? '',
       name: object.categoryData?.name ?? '',
+      availabilityPeriodIds: object.categoryData?.availabilityPeriodIds ?? [],
       ...this.availability(object),
+    };
+  }
+
+  private mapAvailabilityPeriod(
+    object: Square.CatalogObject.AvailabilityPeriod,
+  ): AvailabilityPeriodModel | null {
+    const data = object.availabilityPeriodData;
+    if (!object.id || !data?.startLocalTime || !data.endLocalTime || !data.dayOfWeek) {
+      return null;
+    }
+    return {
+      id: object.id,
+      startLocalTime: data.startLocalTime,
+      endLocalTime: data.endLocalTime,
+      dayOfWeek: data.dayOfWeek,
     };
   }
 
