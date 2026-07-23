@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+client/.next/
+client/out/
+server/dist/
+*.tsbuildinfo
+
+# Generated API client (regenerated via orval)
+client/lib/api/generated/
+
+# Generated OpenAPI spec
+server/openapi.json
+
+# Env
+.env
+.env.test
+.env*.local
+!.env.example
+!.env.test.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Internal guide / architecture / planning docs (local only — personal working aids, never shipped)
+CLAUDE.md
+MENUFLOW_ARCHITECTURE.md
+MENUFLOW_PHASES.md
+PROJECT_SPECIFICATION_perdiem.md
+perdiem-fullstack-coding-challenge.md
