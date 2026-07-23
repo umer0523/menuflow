@@ -9,8 +9,8 @@ export const SQUARE_CLIENT = Symbol('SQUARE_CLIENT');
 
 /**
  * Builds the one `SquareClient` from validated config. The token stays backend-side only
- * (read via `ConfigService`, never `process.env`). The SDK owns retries/backoff on transient
- * failures (`maxRetries`) — we configure it here and map any final error in the service.
+ * (read via `ConfigService`, never `process.env`). The SDK retries transient failures with
+ * backoff by default; `SquareService` maps any final error to a typed client error.
  */
 export const squareClientProvider: Provider = {
   provide: SQUARE_CLIENT,
