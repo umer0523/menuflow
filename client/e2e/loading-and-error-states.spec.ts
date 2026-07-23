@@ -21,7 +21,9 @@ test.describe('loading and error states', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test('shows error state with retry when catalog request fails then recovers', async ({ page }) => {
+  test('shows error state with retry when catalog request fails then recovers', async ({
+    page,
+  }) => {
     let failCatalog = true;
 
     await page.route('http://localhost:3001/**', async (route) => {
