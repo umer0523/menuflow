@@ -23,7 +23,7 @@ export function ItemDetail({ itemId }: { itemId: string }) {
 
   if (isPending) {
     return (
-      <div aria-busy="true" aria-label="Loading item" className="flex flex-col gap-4">
+      <div aria-busy="true" aria-label={ITEM_DETAIL.LOADING_LABEL} className="flex flex-col gap-4">
         <span className="h-64 w-full max-w-md animate-pulse rounded-lg bg-muted" />
         <span className="h-6 w-48 animate-pulse rounded bg-muted" />
         <span className="h-4 w-64 animate-pulse rounded bg-muted" />

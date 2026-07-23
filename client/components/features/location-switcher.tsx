@@ -3,6 +3,8 @@
 import { useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
 
+import { LOCATION_SWITCHER } from '@/constants/location.constants';
+import { MENU_COPY } from '@/constants/menu.constants';
 import { useLocations } from '@/hooks/use-locations';
 import { cn } from '@/lib/utils';
 import { useSelectedLocation } from '@/providers/location-provider';
@@ -28,7 +30,7 @@ export function LocationSwitcher() {
 
   if (isPending) {
     return (
-      <div className="flex gap-2" aria-busy="true" aria-label="Loading locations">
+      <div className="flex gap-2" aria-busy="true" aria-label={LOCATION_SWITCHER.LOADING_LABEL}>
         <span className="h-9 w-24 animate-pulse rounded-md bg-muted" />
         <span className="h-9 w-24 animate-pulse rounded-md bg-muted" />
       </div>
@@ -45,20 +47,20 @@ export function LocationSwitcher() {
           className="inline-flex items-center gap-1 rounded-md border border-input px-2 py-1 font-medium text-foreground hover:bg-accent"
         >
           <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-          Retry
+          {MENU_COPY.RETRY}
         </button>
       </div>
     );
   }
 
   if (locations.length === 0) {
-    return <p className="text-sm text-muted-foreground">No locations available.</p>;
+    return <p className="text-sm text-muted-foreground">{LOCATION_SWITCHER.EMPTY}</p>;
   }
 
   return (
     <div
       role="group"
-      aria-label="Select location"
+      aria-label={LOCATION_SWITCHER.GROUP_LABEL}
       className="inline-flex flex-wrap gap-1 rounded-lg border border-border bg-muted/40 p-1"
     >
       {locations.map((location) => {

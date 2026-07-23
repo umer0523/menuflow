@@ -34,7 +34,7 @@ export function MenuBrowser() {
       <div
         className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
         aria-busy="true"
-        aria-label="Loading menu"
+        aria-label={MENU_COPY.LOADING_LABEL}
       >
         {Array.from({ length: MENU_SKELETON_COUNT }).map((_, index) => (
           <span key={index} className="h-28 animate-pulse rounded-lg bg-muted" />

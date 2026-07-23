@@ -3,6 +3,7 @@ export const MENU_COPY = {
   EMPTY: 'No items are available at this location yet.',
   RETRY: 'Retry',
   NO_PRICE: 'Price unavailable',
+  LOADING_LABEL: 'Loading menu',
 } as const;
 
 /** Placeholder cards shown while the menu loads (a bounded skeleton, never an infinite spinner). */
@@ -28,4 +29,5 @@ export const ITEM_DETAIL = {
   BACK: 'Back to menu',
   OPTIONS_LABEL: 'Options',
   NO_IMAGE: 'No image available',
+  LOADING_LABEL: 'Loading item',
 } as const;
