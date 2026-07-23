@@ -8,7 +8,7 @@
   },
   "packageManager": "pnpm@10.18.0",
   "scripts": {
-    "dev": "pnpm --parallel --filter ./client --filter ./server dev",
+    "dev": "pnpm api:generate && pnpm --parallel --filter ./client --filter ./server dev",
     "build": "pnpm --filter ./server build && pnpm --filter ./client build",
     "start": "pnpm --parallel --filter ./client --filter ./server start",
     "lint": "pnpm --recursive lint",

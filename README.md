@@ -18,8 +18,7 @@ Built with **Next.js (App Router)** on the frontend and **NestJS** on the backen
 ```bash
 pnpm install
 cp .env.example server/.env     # fill in Square sandbox credentials
-pnpm api:generate               # emit the OpenAPI spec + typed client (no creds needed)
-pnpm dev                        # runs client + server together
+pnpm dev                        # generates API client, then runs client + server together
 ```
 
 - Client: Next.js dev server on http://localhost:3000
@@ -27,20 +26,20 @@ pnpm dev                        # runs client + server together
 
 The server validates its environment on startup and **fails fast** if any Square variable is missing or malformed.
 
-`pnpm api:generate` builds the backend OpenAPI spec (`server/openapi.json`) and regenerates the typed client under `client/lib/api/generated/` (both git-ignored). Re-run it whenever a controller or DTO changes. The client's API base URL defaults to `http://localhost:3001` and can be overridden with `NEXT_PUBLIC_API_URL`.
+`pnpm dev` always regenerates the typed API client first (`server/openapi.json` + `client/lib/api/generated/` — both git-ignored) before starting the servers, so the client stays in sync with the backend contract automatically. The client's API base URL defaults to `http://localhost:3001` and can be overridden with `NEXT_PUBLIC_API_URL`.
 
 ## Scripts
 
 Run from the repo root:
 
-| Script              | Purpose                                |
-| ------------------- | -------------------------------------- |
-| `pnpm dev`          | Run client + server together           |
-| `pnpm build`        | Build both workspaces                  |
-| `pnpm lint`         | Lint both workspaces                   |
-| `pnpm test`         | Run all unit tests                     |
-| `pnpm api:generate` | Regenerate OpenAPI spec + typed client |
-| `pnpm format`       | Prettier write across the repo         |
+| Script              | Purpose                                                        |
+| ------------------- | -------------------------------------------------------------- |
+| `pnpm dev`          | Regenerate API client, then run client + server together       |
+| `pnpm build`        | Build both workspaces                                          |
+| `pnpm lint`         | Lint both workspaces                                           |
+| `pnpm test`         | Run all unit tests                                             |
+| `pnpm api:generate` | Regenerate OpenAPI spec + typed client (run by `dev` already) |
+| `pnpm format`       | Prettier write across the repo                                 |
 
 ## Testing
 
