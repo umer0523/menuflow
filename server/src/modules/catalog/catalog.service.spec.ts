@@ -1,10 +1,10 @@
-import type { SquareService } from '../square/square.service';
+import type { SquareService } from '../../square/square.service';
 import { CatalogService } from './catalog.service';
 import {
   createSquareServiceMock,
   type SquareServiceMock,
-} from '../../test/utils/square-service.mock';
-import { ClientNotFoundError } from '../common/errors/client-not-found.error';
+} from '../../../test/utils/square-service.mock';
+import { ClientNotFoundError } from '../../common/errors/client-not-found.error';
 import {
   AIRPORT_LOCATION_ID,
   CATALOG_SNAPSHOT,
@@ -15,7 +15,7 @@ import {
   LATTE_LARGE_PRICE,
   LATTE_PRICE,
   PASTRY_CATEGORY_ID,
-} from '../../test/utils/catalog-snapshot.fixture';
+} from '../../../test/utils/catalog-snapshot.fixture';
 
 describe('CatalogService', () => {
   let square: SquareServiceMock;

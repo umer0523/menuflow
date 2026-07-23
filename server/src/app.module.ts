@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { CatalogModule } from './catalog/catalog.module';
+import { CatalogModule } from './modules/catalog/catalog.module';
 import { configuration } from './config/configuration';
 import { validateEnv } from './config/env.validation';
 import { HealthController } from './health/health.controller';
-import { LocationsModule } from './locations/locations.module';
+import { LocationsModule } from './modules/locations/locations.module';
 import { SquareModule } from './square/square.module';
 
 @Module({

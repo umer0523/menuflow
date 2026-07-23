@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-import { SquareService } from '../square/square.service';
-import type { SquareLocationModel } from '../square/square.types';
+import { SquareService } from '../../square/square.service';
+import type { SquareLocationModel } from '../../square/square.types';
 import { LocationResponseDto } from './dto/location-response.dto';
 
 /**

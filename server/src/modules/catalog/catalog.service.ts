@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import { ClientNotFoundError } from '../common/errors/client-not-found.error';
-import { isItemVisibleAtLocation } from '../square/availability.util';
-import { resolveItemPrice } from '../square/money.util';
-import { SquareService } from '../square/square.service';
-import type { CatalogItemModel, ItemVariationModel, MoneyModel } from '../square/square.types';
+import { ClientNotFoundError } from '../../common/errors/client-not-found.error';
+import { isItemVisibleAtLocation } from '../../square/availability.util';
+import { resolveItemPrice } from '../../square/money.util';
+import { SquareService } from '../../square/square.service';
+import type { CatalogItemModel, ItemVariationModel, MoneyModel } from '../../square/square.types';
 import { UNCATEGORIZED } from './catalog.constants';
 import { CategoryResponseDto } from './dto/category-response.dto';
 import { ItemDetailResponseDto } from './dto/item-detail-response.dto';

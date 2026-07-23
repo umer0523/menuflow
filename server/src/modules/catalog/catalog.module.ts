@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import { SquareModule } from '../square/square.module';
+import { SquareModule } from '../../square/square.module';
 import { CatalogController } from './catalog.controller';
 import { CatalogService } from './catalog.service';
 
