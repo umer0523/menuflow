@@ -1,10 +1,4 @@
-import type { ItemVariationModel, MoneyModel } from './square.types';
-
-/** The subset of Square's `Money` we read — amount is a bigint in the current SDK. */
-interface RawMoney {
-  amount?: bigint | number | null;
-  currency?: string | null;
-}
+import type { ItemVariationModel, MoneyModel, RawMoney } from './square.types';
 
 /**
  * Normalize a Square `Money` into our `MoneyModel`, carrying integer cents + currency

@@ -4,6 +4,12 @@
  * boundary; feature services (M3/M4) consume these and map them again to response DTOs.
  */
 
+/** The subset of Square's SDK `Money` we read — amount is a bigint in the current SDK. */
+export interface RawMoney {
+  amount?: bigint | number | null;
+  currency?: string | null;
+}
+
 /** Money kept as Square sends it: integer amount in the smallest unit (cents) + currency. */
 export interface MoneyModel {
   amount: number;
@@ -24,6 +30,16 @@ export interface AvailabilityFields {
   presentAtAllLocations: boolean;
   presentAtLocationIds: string[];
   absentAtLocationIds: string[];
+}
+
+/**
+ * The raw (all-optional) availability shape as it arrives on Square SDK objects — items and
+ * categories share these fields without a common base class. Normalized into {@link AvailabilityFields}.
+ */
+export interface AvailabilitySource {
+  presentAtAllLocations?: boolean;
+  presentAtLocationIds?: string[];
+  absentAtLocationIds?: string[];
 }
 
 export interface CatalogItemModel extends AvailabilityFields {

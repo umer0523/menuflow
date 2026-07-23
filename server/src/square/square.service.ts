@@ -8,19 +8,14 @@ import { SQUARE_CLIENT } from './square-client.provider';
 import { CATALOG_LIST_TYPES, SQUARE_CACHE } from './square.constants';
 import { isCatalogCategory, isCatalogItem, isItemVariation } from './square.guards';
 import type {
+  AvailabilityFields,
+  AvailabilitySource,
   CatalogCategoryModel,
   CatalogItemModel,
   CatalogSnapshot,
   ItemVariationModel,
   SquareLocationModel,
 } from './square.types';
-
-/** Structural view of the availability fields shared (but not via a common base) by items + categories. */
-interface AvailabilitySource {
-  presentAtAllLocations?: boolean;
-  presentAtLocationIds?: string[];
-  absentAtLocationIds?: string[];
-}
 
 /**
  * The **sole** Square touchpoint (architecture §5). Owns the SDK client, pagination, the
@@ -122,11 +117,7 @@ export class SquareService {
     };
   }
 
-  private availability(object: AvailabilitySource): {
-    presentAtAllLocations: boolean;
-    presentAtLocationIds: string[];
-    absentAtLocationIds: string[];
-  } {
+  private availability(object: AvailabilitySource): AvailabilityFields {
     return {
       // Square defaults `present_at_all_locations` to true when unset.
       presentAtAllLocations: object.presentAtAllLocations ?? true,
