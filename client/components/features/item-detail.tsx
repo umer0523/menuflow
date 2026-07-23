@@ -83,7 +83,7 @@ export function ItemDetail({ itemId }: { itemId: string }) {
 
         <div className="flex flex-col gap-3">
           <div className="flex items-start justify-between gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">{item.name}</h1>
+            <h2 className="text-2xl font-bold tracking-tight">{item.name}</h2>
             <span className="whitespace-nowrap text-lg font-semibold">
               {item.priceLabel ?? MENU_COPY.NO_PRICE}
             </span>
@@ -92,9 +92,9 @@ export function ItemDetail({ itemId }: { itemId: string }) {
 
           {item.variations.length > 0 ? (
             <section aria-label={ITEM_DETAIL.OPTIONS_LABEL} className="mt-2">
-              <h2 className="mb-2 text-sm font-semibold text-muted-foreground">
+              <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
                 {ITEM_DETAIL.OPTIONS_LABEL}
-              </h2>
+              </h3>
               <ul className="flex flex-col gap-1">
                 {item.variations.map((variation) => (
                   <li

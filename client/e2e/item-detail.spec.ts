@@ -18,7 +18,7 @@ test.describe('item detail', () => {
     await expect(page).toHaveURL(/\/items\/.+/);
 
     // Name shows as the detail heading.
-    await expect(page.getByRole('heading', { level: 1, name: itemName })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: itemName })).toBeVisible();
 
     // A price formatted via Intl.NumberFormat (a currency symbol + digits), or the no-price copy.
     await expect(page.getByText(/[€£$¥]\s?\d|Price unavailable/).first()).toBeVisible();

@@ -66,7 +66,7 @@ describe('ItemDetail', () => {
     useItemMock.mockReturnValue(mockItemQuery({ data: LATTE }));
     render(<ItemDetail itemId="item-latte" />);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Latte' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Latte' })).toBeInTheDocument();
     // The "from" price and the single variation's price both render as $5.00.
     expect(screen.getAllByText('$5.00')).toHaveLength(2);
     expect(screen.getByRole('img', { name: 'Latte' })).toBeInTheDocument();

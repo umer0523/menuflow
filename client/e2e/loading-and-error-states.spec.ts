@@ -60,6 +60,7 @@ test.describe('loading and error states', () => {
     await page.goto('/');
     const firstItem = page.getByTestId('menu-item').first();
     await expect(firstItem).toBeVisible();
+    const itemName = (await firstItem.getAttribute('data-item-name')) ?? '';
     await firstItem.click();
     await expect(page).toHaveURL(/\/items\/.+/);
 
@@ -78,6 +79,6 @@ test.describe('loading and error states', () => {
 
     failItem = false;
     await page.getByRole('button', { name: /retry/i }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: itemName })).toBeVisible();
   });
 });
