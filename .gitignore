@@ -38,8 +38,7 @@ npm-debug.log*
 .vscode/*
 !.vscode/extensions.json
 
-# Internal guide / architecture / planning docs (local only — personal working aids, never shipped)
-CLAUDE.md
+# Local-only architecture / planning docs (personal working aids, never shipped)
 MENUFLOW_ARCHITECTURE.md
 MENUFLOW_PHASES.md
 PROJECT_SPECIFICATION_perdiem.md
