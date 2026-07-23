@@ -26,11 +26,3 @@ export function writeStorage(key: string, value: string): void {
     // Best-effort persistence; a failure just means the choice won't survive a reload.
   }
 }
-
-export function removeStorage(key: string): void {
-  try {
-    window.localStorage.removeItem(key);
-  } catch {
-    // Nothing to recover from — the key simply stays until the store is reachable again.
-  }
-}

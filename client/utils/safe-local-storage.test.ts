@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { readStorage, removeStorage, writeStorage } from './safe-local-storage';
+import { readStorage, writeStorage } from './safe-local-storage';
 
 const KEY = 'menuflow.test-key';
 
@@ -11,11 +11,9 @@ describe('safe-local-storage', () => {
   });
 
   it('round-trips a value through the real store', () => {
+    expect(readStorage(KEY)).toBeNull();
     writeStorage(KEY, 'value');
     expect(readStorage(KEY)).toBe('value');
-
-    removeStorage(KEY);
-    expect(readStorage(KEY)).toBeNull();
   });
 
   it('returns null instead of throwing when reads fail', () => {
@@ -25,14 +23,10 @@ describe('safe-local-storage', () => {
     expect(readStorage(KEY)).toBeNull();
   });
 
-  it('swallows write/remove failures (best-effort persistence)', () => {
+  it('swallows write failures (best-effort persistence)', () => {
     vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
       throw new DOMException('quota', 'QuotaExceededError');
     });
-    vi.spyOn(window.localStorage, 'removeItem').mockImplementation(() => {
-      throw new DOMException('denied', 'SecurityError');
-    });
     expect(() => writeStorage(KEY, 'value')).not.toThrow();
-    expect(() => removeStorage(KEY)).not.toThrow();
   });
 });
