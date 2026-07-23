@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
+import { CatalogModule } from './catalog/catalog.module';
 import { configuration } from './config/configuration';
 import { validateEnv } from './config/env.validation';
 import { HealthController } from './health/health.controller';
@@ -17,6 +18,7 @@ import { SquareModule } from './square/square.module';
     }),
     SquareModule,
     LocationsModule,
+    CatalogModule,
   ],
   controllers: [HealthController],
 })
