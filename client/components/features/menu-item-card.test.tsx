@@ -10,7 +10,6 @@ const ITEM: MenuItemView = {
   name: 'Latte',
   description: 'Espresso with steamed milk',
   priceLabel: '$5.00',
-  imageIds: [],
 };
 
 describe('MenuItemCard', () => {

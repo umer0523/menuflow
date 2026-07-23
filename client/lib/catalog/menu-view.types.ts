@@ -8,7 +8,6 @@ export interface MenuItemView {
   description?: string;
   /** Pre-formatted "from" price, or `null` when the item has no priced variation. */
   priceLabel: string | null;
-  imageIds: string[];
 }
 
 export interface MenuCategoryView {
