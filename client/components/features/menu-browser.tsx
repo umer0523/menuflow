@@ -1,24 +1,33 @@
 'use client';
 
+import { useMemo } from 'react';
 import { RefreshCw } from 'lucide-react';
 
 import { MENU_COPY, MENU_SKELETON_COUNT } from '@/constants/menu.constants';
 import { useCatalog } from '@/hooks/use-catalog';
+import { useCategoryFilter } from '@/hooks/use-category-filter';
+import { categoryKey } from '@/lib/catalog/category-key';
 import { toMenuView } from '@/lib/catalog/to-menu-view';
 import { useSelectedLocation } from '@/providers/location-provider';
 import { getErrorMessage } from '@/utils/get-error-message';
 
+import { CategoryFilter } from './category-filter';
 import { MenuCategorySection } from './menu-category-section';
 
+/** A filter is only useful once there's more than one category to choose between. */
+const MIN_CATEGORIES_FOR_FILTER = 2;
+
 /**
- * Grouped, location-aware menu (core requirements #2 + #3). Re-fetches whenever the selected
+ * Grouped, location-aware menu (core requirements #2, #3, #4). Re-fetches whenever the selected
  * location changes (the query is keyed on it) and renders explicit loading / empty / error+retry
- * states — never a bare spinner. Server state stays in TanStack Query; the selected location is UI
- * state from the provider.
+ * states — never a bare spinner. Server state stays in TanStack Query; the selected location and the
+ * category filter are UI state. Hooks run before any early return (Rules of Hooks).
  */
 export function MenuBrowser() {
   const { selectedLocationId } = useSelectedLocation();
   const { data, isPending, isError, error, refetch } = useCatalog(selectedLocationId);
+  const categories = useMemo(() => (data ? toMenuView(data) : []), [data]);
+  const { selectedKey, setSelectedKey, filteredCategories } = useCategoryFilter(categories);
 
   if (isPending) {
     return (
@@ -50,17 +59,24 @@ export function MenuBrowser() {
     );
   }
 
-  const categories = toMenuView(data);
-
   if (categories.length === 0) {
     return <p className="text-sm text-muted-foreground">{MENU_COPY.EMPTY}</p>;
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      {categories.map((category) => (
-        <MenuCategorySection key={category.id ?? 'uncategorized'} category={category} />
-      ))}
+    <div className="flex flex-col gap-6">
+      {categories.length >= MIN_CATEGORIES_FOR_FILTER ? (
+        <CategoryFilter
+          categories={categories}
+          selectedKey={selectedKey}
+          onSelect={setSelectedKey}
+        />
+      ) : null}
+      <div className="flex flex-col gap-8">
+        {filteredCategories.map((category) => (
+          <MenuCategorySection key={categoryKey(category.id)} category={category} />
+        ))}
+      </div>
     </div>
   );
 }

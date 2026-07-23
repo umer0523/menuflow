@@ -7,3 +7,17 @@ export const MENU_COPY = {
 
 /** Placeholder cards shown while the menu loads (a bounded skeleton, never an infinite spinner). */
 export const MENU_SKELETON_COUNT = 6;
+
+/**
+ * Category filter copy + the "All" sentinel. `ALL_KEY`/`UNCATEGORIZED_KEY` are namespaced strings
+ * that can't collide with a real Square category id, so selection can be modeled as a single string
+ * key even though a category id may be `null` (the Uncategorized bucket).
+ */
+export const CATEGORY_FILTER = {
+  ALL_KEY: 'all',
+  ALL_LABEL: 'All',
+  FILTER_LABEL: 'Filter by category',
+} as const;
+
+/** Stable key for a category whose id is `null` (the Uncategorized bucket) — see `category-key.ts`. */
+export const UNCATEGORIZED_KEY = 'uncategorized';
