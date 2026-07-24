@@ -4,6 +4,8 @@ A multi-location **Square menu browser**. Pick a location, browse catalog items 
 
 Built with **Next.js (App Router)** on the frontend and **NestJS** on the backend, in a single pnpm monorepo.
 
+🎥 **[Watch the demo walkthrough (Loom)](https://www.loom.com/share/147d089ae2304675a6f166f297ce3818)**
+
 > Status: **feature complete** including the time-of-day / day-of-week availability bonus. Live: the location switcher (`GET /locations`, persisted selection), the location-aware grouped menu — `GET /catalog`, `GET /categories`, and `GET /items` (filterable by `locationId` + `categoryId`) resolve item visibility with Square's `present_at_all_locations` / `present_at_location_ids` / `absent_at_location_ids` rule and hide empty categories — a **category filter** to narrow the menu, an **item-detail page** (`GET /items/:id`) with image (or placeholder), description, variations, and price formatted via `Intl.NumberFormat`, **explicit loading, empty, and error+retry states** on every data view, and **time-of-day / day-of-week category availability** using Square's `CatalogAvailabilityPeriod` objects evaluated in the location's own timezone.
 
 ---
