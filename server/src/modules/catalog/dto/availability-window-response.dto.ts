@@ -9,6 +9,8 @@ export class AvailabilityWindowDto {
   @ApiProperty({ description: 'Window open time — HH:MM:SS in the location timezone.' })
   startLocalTime!: string;
 
-  @ApiProperty({ description: 'Window close time (exclusive) — HH:MM:SS in the location timezone.' })
+  @ApiProperty({
+    description: 'Window close time (exclusive) — HH:MM:SS in the location timezone.',
+  })
   endLocalTime!: string;
 }

@@ -48,7 +48,7 @@ describe('toItemDetailView', () => {
     expect(view.variations[0]?.priceLabel).toBeNull();
   });
 
-  it('threads item availability and today\'s windows through to the view model', () => {
+  it("threads item availability and today's windows through to the view model", () => {
     const windows = [{ startLocalTime: '07:00:00', endLocalTime: '11:00:00' }];
     const view = toItemDetailView({ ...LATTE, available: false, availabilityWindows: windows });
 

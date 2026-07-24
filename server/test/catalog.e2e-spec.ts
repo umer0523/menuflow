@@ -85,7 +85,9 @@ describe('Catalog (e2e)', () => {
 
       expect(response.body.every((group: { available: boolean }) => group.available)).toBe(true);
       expect(
-        response.body.every((group: { availabilityWindows: null }) => group.availabilityWindows === null),
+        response.body.every(
+          (group: { availabilityWindows: null }) => group.availabilityWindows === null,
+        ),
       ).toBe(true);
     });
 
@@ -135,9 +137,8 @@ describe('Catalog (e2e)', () => {
         .query({ locationId: DOWNTOWN_LOCATION_ID })
         .expect(200);
 
-      const breakfast = response.body.find(
-        (g: { name: string }) => g.name === 'E2E Breakfast',
-      ) as { available: boolean; availabilityWindows: unknown[] } | undefined;
+      const breakfast = response.body.find((g: { name: string }) => g.name === 'E2E Breakfast') as
+        { available: boolean; availabilityWindows: unknown[] } | undefined;
       expect(breakfast?.available).toBe(false);
       expect(Array.isArray(breakfast?.availabilityWindows)).toBe(true);
     });

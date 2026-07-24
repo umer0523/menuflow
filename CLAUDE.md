@@ -6,22 +6,22 @@
 
 ## Tech Stack
 
-| Area | Choice |
-|---|---|
-| Monorepo | pnpm workspace — `client/` + `server/` |
-| Runtime | Node.js 22 LTS |
-| Frontend | Next.js (App Router), React, TypeScript (strict) |
-| UI | shadcn/ui + Tailwind CSS; icons `lucide-react` |
-| Server state | TanStack Query |
-| HTTP (client → backend) | Axios via the generated fetcher |
-| Forms/validation | Zod (+ react-hook-form where a form exists) |
-| Backend | NestJS, TypeScript (strict) |
-| Validation (backend) | class-validator + class-transformer |
-| Square access | Square Node SDK inside `SquareService` |
-| Config | `@nestjs/config` + startup env validation (fail-fast) |
-| Caching | in-memory TTL cache in the service layer (no DB) |
-| API client | Swagger → orval-generated typed hooks |
-| Tests | Jest (backend unit/e2e), Vitest + Testing Library (frontend unit), Playwright (frontend e2e, local only) |
+| Area                    | Choice                                                                                                   |
+| ----------------------- | -------------------------------------------------------------------------------------------------------- |
+| Monorepo                | pnpm workspace — `client/` + `server/`                                                                   |
+| Runtime                 | Node.js 22 LTS                                                                                           |
+| Frontend                | Next.js (App Router), React, TypeScript (strict)                                                         |
+| UI                      | shadcn/ui + Tailwind CSS; icons `lucide-react`                                                           |
+| Server state            | TanStack Query                                                                                           |
+| HTTP (client → backend) | Axios via the generated fetcher                                                                          |
+| Forms/validation        | Zod (+ react-hook-form where a form exists)                                                              |
+| Backend                 | NestJS, TypeScript (strict)                                                                              |
+| Validation (backend)    | class-validator + class-transformer                                                                      |
+| Square access           | Square Node SDK inside `SquareService`                                                                   |
+| Config                  | `@nestjs/config` + startup env validation (fail-fast)                                                    |
+| Caching                 | in-memory TTL cache in the service layer (no DB)                                                         |
+| API client              | Swagger → orval-generated typed hooks                                                                    |
+| Tests                   | Jest (backend unit/e2e), Vitest + Testing Library (frontend unit), Playwright (frontend e2e, local only) |
 
 ### Project structure
 
@@ -57,9 +57,11 @@ MenuFlow/
 ## Documentation
 
 ### `README.md` — shipped
+
 Update it when a change touches installation steps, scripts, env vars, project structure, or user-visible functionality. Keep it concise — no implementation detail or internal decisions.
 
 ### Architecture doc — local only
+
 Single home for implementation decisions, trade-offs, and post-implementation journal entries. Never create additional doc files for this. Append a journal entry per completed feature; don't edit the pre-implementation design above the journal divider.
 
 > No feature is done until README and/or the architecture doc are updated as needed.
@@ -80,11 +82,11 @@ Strict mode throughout. For Square's loosely-typed SDK responses, narrow with ty
 - Named exports everywhere except framework-required defaults.
 - Split by responsibility past ~400 lines.
 
-| Kind | Pattern |
-|---|---|
-| Component | `kebab-case.tsx` |
-| Service / Controller / Module | `name.service.ts` / `name.controller.ts` / `name.module.ts` |
-| DTO | `create-name.dto.ts`, `name-response.dto.ts` |
+| Kind                            | Pattern                                                                 |
+| ------------------------------- | ----------------------------------------------------------------------- |
+| Component                       | `kebab-case.tsx`                                                        |
+| Service / Controller / Module   | `name.service.ts` / `name.controller.ts` / `name.module.ts`             |
+| DTO                             | `create-name.dto.ts`, `name-response.dto.ts`                            |
 | Enum / Types / Constants / Util | `name.enum.ts` / `name.types.ts` / `name.constants.ts` / `name.util.ts` |
 
 Imports: relative within a module, path alias across modules.
@@ -98,17 +100,21 @@ Imports: relative within a module, path alias across modules.
 **Layering:** `Controller → Service → SquareService → Square`. Controllers are thin — extract input, validate via DTOs, return a DTO, no business logic, no try/catch. Services own business rules and map Square models to response DTOs. `SquareService` is the sole Square touchpoint.
 
 ### Square integration
+
 - `SquareService` wraps the SDK, handles pagination cursors, rate limits, and the TTL cache.
 - **Availability rule:** item visible at location `L` iff `(present_at_all_locations OR L ∈ present_at_location_ids) AND L ∉ absent_at_location_ids`. `absent` always wins.
 - **Money:** carry `{ amount, currency }` (Square's integer minor units) through the service layer; format on the client with `Intl.NumberFormat`. Never do arithmetic on display strings.
 
 ### Caching
+
 In-memory TTL cache (60 s) in `SquareService`. Process-local, best-effort — a miss refetches. No DB, no Redis.
 
 ### Errors
+
 Typed hierarchy (`Client*Error`); global exception filter formats a consistent envelope. Log unexpected/infra errors (Square failures, rate limits) with structured context (`{ locationId, itemId, error }`). Don't log expected client errors.
 
 ### Validation
+
 `ValidationPipe` with `whitelist + forbidNonWhitelisted + transform`. Separate request DTOs (validated input) from response DTOs (client contract).
 
 ---
@@ -118,6 +124,7 @@ Typed hierarchy (`Client*Error`); global exception filter formats a consistent e
 RESTful: `GET /locations`, `GET /catalog`, `GET /categories`, `GET /items` (filterable by `locationId`/`categoryId`), `GET /items/:id`. Swagger decorators on every endpoint — the spec drives the generated client.
 
 ### Generated client (orval)
+
 Swagger spec → typed React Query hooks under `client/lib/api/generated/` (git-ignored). Never hand-write API calls or edit generated files. After changing a controller/DTO, re-run `pnpm api:generate`; drift is caught by typecheck.
 
 ---

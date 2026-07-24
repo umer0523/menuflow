@@ -5,7 +5,5 @@ export function formatLocalTime(hhmmss: string): string {
   const minute = parseInt(minuteStr, 10);
   const period = hour < 12 ? 'AM' : 'PM';
   const displayHour = hour % 12 || 12;
-  return minute === 0
-    ? `${displayHour} ${period}`
-    : `${displayHour}:${minuteStr} ${period}`;
+  return minute === 0 ? `${displayHour} ${period}` : `${displayHour}:${minuteStr} ${period}`;
 }

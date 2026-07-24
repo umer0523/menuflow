@@ -89,7 +89,11 @@ export const BREAKFAST_CATEGORY_ID = 'cat-breakfast';
 export const AVAILABILITY_PERIODS: Square.CatalogObject.AvailabilityPeriod[] = [
   makeAvailabilityPeriod({
     id: BREAKFAST_PERIOD_ID,
-    availabilityPeriodData: { dayOfWeek: 'MON', startLocalTime: '07:00:00', endLocalTime: '11:00:00' },
+    availabilityPeriodData: {
+      dayOfWeek: 'MON',
+      startLocalTime: '07:00:00',
+      endLocalTime: '11:00:00',
+    },
   }),
 ];
 

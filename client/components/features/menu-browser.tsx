@@ -34,7 +34,8 @@ export function MenuBrowser() {
     () => allCategories.filter((c) => c.available),
     [allCategories],
   );
-  const { selectedKey, setSelectedKey, filteredCategories } = useCategoryFilter(availableCategories);
+  const { selectedKey, setSelectedKey, filteredCategories } =
+    useCategoryFilter(availableCategories);
 
   // "All" shows every category (available normal, unavailable dimmed); a specific filter shows only
   // that category (always available, since unavailable ones never appear in the filter chips).
