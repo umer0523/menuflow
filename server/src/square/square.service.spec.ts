@@ -31,6 +31,26 @@ function asPage(objects: Square.CatalogObject[]): AsyncIterable<Square.CatalogOb
   };
 }
 
+/** Like {@link asPage} but spanning several cursor pages, to prove the loop drains all of them. */
+function asMultiPage(pages: Square.CatalogObject[][]): AsyncIterable<Square.CatalogObject> {
+  return {
+    async *[Symbol.asyncIterator]() {
+      for (const page of pages) {
+        yield* page;
+      }
+    },
+  };
+}
+
+function makeItem(id: string): Square.CatalogObject {
+  return {
+    type: 'ITEM',
+    id,
+    presentAtAllLocations: true,
+    itemData: { name: id, variations: [] },
+  };
+}
+
 describe('SquareService', () => {
   let service: SquareService;
   let client: MockSquareClient;
@@ -97,6 +117,27 @@ describe('SquareService', () => {
 
       const drip = snapshot.items.find((item) => item.id === 'item-drip');
       expect(drip?.absentAtLocationIds).toEqual([AIRPORT_LOCATION_ID]);
+    });
+
+    it('drains every cursor page, not just the first', async () => {
+      // Three pages of items — getCatalog must collect all of them in order, proving the
+      // for-await loop follows the SDK's cursors instead of stopping after page one.
+      const pages = [
+        [makeItem('item-p1a'), makeItem('item-p1b')],
+        [makeItem('item-p2a'), makeItem('item-p2b')],
+        [makeItem('item-p3a')],
+      ];
+      client.catalog.list.mockResolvedValue(asMultiPage(pages));
+
+      const snapshot = await service.getCatalog();
+
+      expect(snapshot.items.map((item) => item.id)).toEqual([
+        'item-p1a',
+        'item-p1b',
+        'item-p2a',
+        'item-p2b',
+        'item-p3a',
+      ]);
     });
 
     it('resolves IMAGE objects into an imageId → url map', async () => {
