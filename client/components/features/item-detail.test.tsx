@@ -51,6 +51,8 @@ const LATTE: ItemDetailResponseDto = {
   price: { amount: 500, currency: 'USD' },
   imageIds: ['img-latte'],
   imageUrls: ['https://img/latte.png'],
+  available: true,
+  availabilityWindows: null,
   variations: [{ id: 'v1', name: 'Small', price: { amount: 500, currency: 'USD' } }],
 };
 
@@ -71,6 +73,21 @@ describe('ItemDetail', () => {
     expect(screen.getAllByText('$5.00')).toHaveLength(2);
     expect(screen.getByRole('img', { name: 'Latte' })).toBeInTheDocument();
     expect(screen.getByText('Small')).toBeInTheDocument();
+  });
+
+  it('shows an availability badge when the item is out of its time window', () => {
+    useItemMock.mockReturnValue(
+      mockItemQuery({
+        data: {
+          ...LATTE,
+          available: false,
+          availabilityWindows: [{ startLocalTime: '07:00:00', endLocalTime: '11:00:00' }],
+        },
+      }),
+    );
+    render(<ItemDetail itemId="item-latte" />);
+
+    expect(screen.getByText('Available 7 AM–11 AM')).toBeInTheDocument();
   });
 
   it('shows a placeholder when the item has no image', () => {

@@ -3,11 +3,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { isAxiosError } from 'axios';
-import { ArrowLeft, ImageOff, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Clock, ImageOff, RefreshCw } from 'lucide-react';
 
 import { ITEM_DETAIL, MENU_COPY } from '@/constants/menu.constants';
 import { ROUTES } from '@/constants/routes.constants';
 import { useItem } from '@/hooks/use-item';
+import { buildAvailabilityLabel } from '@/lib/catalog/availability-label';
 import { toItemDetailView } from '@/lib/catalog/to-item-detail-view';
 import { useSelectedLocation } from '@/providers/location-provider';
 import { getErrorMessage } from '@/utils/get-error-message';
@@ -88,6 +89,12 @@ export function ItemDetail({ itemId }: { itemId: string }) {
               {item.priceLabel ?? MENU_COPY.NO_PRICE}
             </span>
           </div>
+          {!item.available ? (
+            <span className="inline-flex w-fit items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+              <Clock className="h-3 w-3" aria-hidden="true" />
+              {buildAvailabilityLabel(item.availabilityWindows)}
+            </span>
+          ) : null}
           {item.description ? <p className="text-muted-foreground">{item.description}</p> : null}
 
           {item.variations.length > 0 ? (

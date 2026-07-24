@@ -34,7 +34,14 @@ const MENU: MenuCategoryResponseDto[] = [
     available: true,
     availabilityWindows: null,
     items: [
-      { id: 'item-latte', name: 'Latte', price: { amount: 500, currency: 'USD' }, imageIds: [] },
+      {
+        id: 'item-latte',
+        name: 'Latte',
+        price: { amount: 500, currency: 'USD' },
+        imageIds: [],
+        available: true,
+        availabilityWindows: null,
+      },
     ],
   },
   {
@@ -48,6 +55,8 @@ const MENU: MenuCategoryResponseDto[] = [
         name: 'Croissant',
         price: { amount: 375, currency: 'USD' },
         imageIds: [],
+        available: true,
+        availabilityWindows: null,
       },
     ],
   },

@@ -12,6 +12,8 @@ const LATTE: ItemDetailResponseDto = {
   price: { amount: 500, currency: 'USD' },
   imageIds: ['img-latte'],
   imageUrls: ['https://img/latte.png', 'https://img/latte-2.png'],
+  available: true,
+  availabilityWindows: null,
   variations: [
     { id: 'v1', name: 'Small', price: { amount: 500, currency: 'USD' } },
     { id: 'v2', name: 'Large', price: { amount: 600, currency: 'USD' } },
@@ -44,5 +46,13 @@ describe('toItemDetailView', () => {
     expect(view.imageUrl).toBeNull();
     expect(view.priceLabel).toBeNull();
     expect(view.variations[0]?.priceLabel).toBeNull();
+  });
+
+  it('threads item availability and today\'s windows through to the view model', () => {
+    const windows = [{ startLocalTime: '07:00:00', endLocalTime: '11:00:00' }];
+    const view = toItemDetailView({ ...LATTE, available: false, availabilityWindows: windows });
+
+    expect(view.available).toBe(false);
+    expect(view.availabilityWindows).toEqual(windows);
   });
 });

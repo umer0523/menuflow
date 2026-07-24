@@ -19,6 +19,8 @@ export function toItemDetailView(item: ItemDetailResponseDto): ItemDetailView {
     priceLabel: item.price === null ? null : formatMoney(item.price),
     imageUrl: item.imageUrls[0] ?? null,
     variations: item.variations.map(toVariationView),
+    available: item.available,
+    availabilityWindows: item.availabilityWindows ?? null,
   };
 }
 

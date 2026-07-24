@@ -1,19 +1,11 @@
 import { Clock } from 'lucide-react';
 
+import { buildAvailabilityLabel } from '@/lib/catalog/availability-label';
 import { categoryKey } from '@/lib/catalog/category-key';
 import type { MenuCategoryView } from '@/lib/catalog/menu-view.types';
 import { cn } from '@/lib/utils';
-import { formatLocalTime } from '@/utils/format-time';
 
 import { MenuItemCard } from './menu-item-card';
-
-function buildAvailabilityLabel(
-  windows: MenuCategoryView['availabilityWindows'],
-): string {
-  const [w] = windows ?? [];
-  if (!w) return 'Not available today';
-  return `Available ${formatLocalTime(w.startLocalTime)}–${formatLocalTime(w.endLocalTime)}`;
-}
 
 /** One category group: a heading (with optional time badge when unavailable) and the item grid. */
 export function MenuCategorySection({ category }: { category: MenuCategoryView }) {

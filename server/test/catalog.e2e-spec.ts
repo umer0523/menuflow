@@ -180,6 +180,20 @@ describe('Catalog (e2e)', () => {
         'Drip Coffee',
       ]);
     });
+
+    it('carries item availability inherited from the category', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/items')
+        .query({ locationId: DOWNTOWN_LOCATION_ID })
+        .expect(200);
+
+      expect(
+        response.body.every(
+          (item: { available: boolean; availabilityWindows: unknown }) =>
+            item.available === true && item.availabilityWindows === null,
+        ),
+      ).toBe(true);
+    });
   });
 
   describe('GET /items/:id', () => {
@@ -193,6 +207,8 @@ describe('Catalog (e2e)', () => {
         id: 'item-latte',
         name: 'Latte',
         imageUrls: [LATTE_IMAGE_URL],
+        available: true,
+        availabilityWindows: null,
       });
       expect(response.body.variations.map((v: { name: string }) => v.name)).toEqual([
         'Small',

@@ -1,17 +1,37 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { ClientNotFoundError } from '../../common/errors/client-not-found.error';
-import { getTodayWindows, isAvailableNow, isItemVisibleAtLocation } from '../../square/availability.util';
+import {
+  getTodayWindows,
+  isAvailableNow,
+  isItemVisibleAtLocation,
+} from '../../square/availability.util';
 import { resolveItemPrice } from '../../square/money.util';
 import { SquareService } from '../../square/square.service';
-import type { CatalogItemModel, ItemVariationModel, MoneyModel } from '../../square/square.types';
+import type {
+  AvailabilityPeriodModel,
+  CatalogCategoryModel,
+  CatalogItemModel,
+  ItemVariationModel,
+  MoneyModel,
+} from '../../square/square.types';
 import { UNCATEGORIZED } from './catalog.constants';
+import { AvailabilityWindowDto } from './dto/availability-window-response.dto';
 import { CategoryResponseDto } from './dto/category-response.dto';
 import { ItemDetailResponseDto } from './dto/item-detail-response.dto';
 import { ItemResponseDto } from './dto/item-response.dto';
 import { ItemVariationResponseDto } from './dto/item-variation-response.dto';
 import { MenuCategoryResponseDto } from './dto/menu-category-response.dto';
 import { MoneyResponseDto } from './dto/money-response.dto';
+
+/** The availability projection shared by a category group and the items inheriting from it. */
+interface ResolvedAvailability {
+  available: boolean;
+  availabilityWindows: AvailabilityWindowDto[] | null;
+}
+
+/** Availability for an item with no category or a category without periods: always orderable. */
+const ALWAYS_AVAILABLE: ResolvedAvailability = { available: true, availabilityWindows: null };
 
 /**
  * Business layer for the menu (core requirements #2 + #3). Reads the cached `CatalogSnapshot` from
@@ -23,6 +43,8 @@ import { MoneyResponseDto } from './dto/money-response.dto';
  */
 @Injectable()
 export class CatalogService {
+  private readonly logger = new Logger(CatalogService.name);
+
   constructor(private readonly square: SquareService) {}
 
   /** Grouped menu: visible, non-empty categories each with their location-visible items. */
@@ -38,11 +60,26 @@ export class CatalogService {
 
   /** Flat list of location-visible items, optionally narrowed to a single category. */
   async getItems(locationId: string, categoryId?: string): Promise<ItemResponseDto[]> {
-    const { items } = await this.square.getCatalog();
-    return items
+    const [snapshot, locations] = await Promise.all([
+      this.square.getCatalog(),
+      this.square.getLocations(),
+    ]);
+    const timezone = locations.find((l) => l.id === locationId)?.timezone ?? 'UTC';
+    const categoriesById = this.indexCategories(snapshot.categories);
+    return snapshot.items
       .filter((item) => isItemVisibleAtLocation(item, locationId))
       .filter((item) => categoryId === undefined || item.categoryId === categoryId)
-      .map((item) => this.toItemDto(item));
+      .map((item) =>
+        this.toItemDto(
+          item,
+          this.resolveItemAvailability(
+            item,
+            categoriesById,
+            snapshot.availabilityPeriods,
+            timezone,
+          ),
+        ),
+      );
   }
 
   /**
@@ -51,13 +88,23 @@ export class CatalogService {
    * endpoints. Resolves image URLs from the snapshot's `imageId → url` map (no extra Square call).
    */
   async getItem(itemId: string, locationId: string): Promise<ItemDetailResponseDto> {
-    const snapshot = await this.square.getCatalog();
+    const [snapshot, locations] = await Promise.all([
+      this.square.getCatalog(),
+      this.square.getLocations(),
+    ]);
     const item = snapshot.items.find((candidate) => candidate.id === itemId);
     if (!item || !isItemVisibleAtLocation(item, locationId)) {
       throw new ClientNotFoundError(`Item ${itemId} was not found`);
     }
+    const timezone = locations.find((l) => l.id === locationId)?.timezone ?? 'UTC';
+    const availability = this.resolveItemAvailability(
+      item,
+      this.indexCategories(snapshot.categories),
+      snapshot.availabilityPeriods,
+      timezone,
+    );
     return {
-      ...this.toItemDto(item),
+      ...this.toItemDto(item, availability),
       imageUrls: item.imageIds
         .map((imageId) => snapshot.images[imageId])
         .filter((url): url is string => url !== undefined),
@@ -79,25 +126,25 @@ export class CatalogService {
     const itemsByCategory = this.groupByCategory(visibleItems);
     const knownCategoryIds = new Set(snapshot.categories.map((category) => category.id));
 
+    this.logDebug(locationId, timezone, snapshot.categories);
+
     // Emit categories in Square's own order, dropping any with no visible item here (hide empty).
     const groups: MenuCategoryResponseDto[] = [];
     for (const category of snapshot.categories) {
       const items = itemsByCategory.get(category.id);
       if (items && items.length > 0) {
+        // The category and every item inside it share one availability computation.
+        const availability = this.resolveAvailability(
+          category.availabilityPeriodIds,
+          snapshot.availabilityPeriods,
+          timezone,
+        );
         groups.push({
           id: category.id,
           name: category.name,
-          items: items.map((i) => this.toItemDto(i)),
-          available: isAvailableNow(
-            category.availabilityPeriodIds,
-            snapshot.availabilityPeriods,
-            timezone,
-          ),
-          availabilityWindows: getTodayWindows(
-            category.availabilityPeriodIds,
-            snapshot.availabilityPeriods,
-            timezone,
-          ),
+          items: items.map((i) => this.toItemDto(i, availability)),
+          available: availability.available,
+          availabilityWindows: availability.availabilityWindows,
         });
       }
     }
@@ -110,13 +157,44 @@ export class CatalogService {
       groups.push({
         id: UNCATEGORIZED.id,
         name: UNCATEGORIZED.name,
-        items: orphans.map((item) => this.toItemDto(item)),
+        items: orphans.map((item) => this.toItemDto(item, ALWAYS_AVAILABLE)),
         available: true,
         availabilityWindows: null,
       });
     }
 
     return groups;
+  }
+
+  /** Emits the resolved timezone, current local day/time, and per-category availability inputs. */
+  private logDebug(
+    locationId: string,
+    timezone: string,
+    categories: CatalogCategoryModel[],
+  ): void {
+    const nowLocal = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      weekday: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).format(new Date());
+    this.logger.debug(
+      `buildMenu location=${locationId} timezone=${timezone} nowLocal=${nowLocal} — ` +
+        `categories with periods: ` +
+        JSON.stringify(
+          categories
+            .filter((c) => c.availabilityPeriodIds.length > 0)
+            .map((c) => ({ name: c.name, periodIds: c.availabilityPeriodIds })),
+        ),
+    );
+  }
+
+  private indexCategories(
+    categories: CatalogCategoryModel[],
+  ): Map<string, CatalogCategoryModel> {
+    return new Map(categories.map((category) => [category.id, category]));
   }
 
   private groupByCategory(items: CatalogItemModel[]): Map<string | undefined, CatalogItemModel[]> {
@@ -132,7 +210,7 @@ export class CatalogService {
     return byCategory;
   }
 
-  private toItemDto(item: CatalogItemModel): ItemResponseDto {
+  private toItemDto(item: CatalogItemModel, availability: ResolvedAvailability): ItemResponseDto {
     return {
       id: item.id,
       name: item.name,
@@ -140,7 +218,35 @@ export class CatalogService {
       categoryId: item.categoryId,
       price: this.toMoneyDto(resolveItemPrice(item)),
       imageIds: item.imageIds,
+      available: availability.available,
+      availabilityWindows: availability.availabilityWindows,
     };
+  }
+
+  /** Resolves a category's (or its items') availability from its periods in the location timezone. */
+  private resolveAvailability(
+    periodIds: string[],
+    periods: Record<string, AvailabilityPeriodModel>,
+    timezone: string,
+  ): ResolvedAvailability {
+    return {
+      available: isAvailableNow(periodIds, periods, timezone),
+      availabilityWindows: getTodayWindows(periodIds, periods, timezone),
+    };
+  }
+
+  /** An item inherits the availability of its category; no/unknown category → always available. */
+  private resolveItemAvailability(
+    item: CatalogItemModel,
+    categoriesById: Map<string, CatalogCategoryModel>,
+    periods: Record<string, AvailabilityPeriodModel>,
+    timezone: string,
+  ): ResolvedAvailability {
+    const category = item.categoryId ? categoriesById.get(item.categoryId) : undefined;
+    if (category === undefined) {
+      return ALWAYS_AVAILABLE;
+    }
+    return this.resolveAvailability(category.availabilityPeriodIds, periods, timezone);
   }
 
   private toVariationDto(variation: ItemVariationModel): ItemVariationResponseDto {

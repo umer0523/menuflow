@@ -131,6 +131,57 @@ describe('CatalogService', () => {
       expect(items.map((item) => item.name)).toEqual(['Latte', 'Drip Coffee', 'Croissant']);
     });
 
+    it('marks items available: true with null windows when their category has no periods', async () => {
+      const items = await service.getItems(DOWNTOWN_LOCATION_ID);
+      expect(items.every((item) => item.available)).toBe(true);
+      expect(items.every((item) => item.availabilityWindows === null)).toBe(true);
+    });
+
+    it('inherits available: false from a time-limited category (outside its window)', async () => {
+      const PERIOD_ID = 'period-breakfast';
+      const snapshotWithBreakfast: CatalogSnapshot = {
+        ...CATALOG_SNAPSHOT,
+        categories: [
+          ...CATALOG_SNAPSHOT.categories,
+          {
+            id: 'cat-breakfast',
+            name: 'Breakfast',
+            presentAtAllLocations: true,
+            presentAtLocationIds: [],
+            absentAtLocationIds: [],
+            availabilityPeriodIds: [PERIOD_ID],
+          },
+        ],
+        items: [
+          ...CATALOG_SNAPSHOT.items,
+          {
+            id: 'item-oatmeal',
+            name: 'Oatmeal',
+            categoryId: 'cat-breakfast',
+            imageIds: [],
+            variations: [{ id: 'var-oatmeal', price: { amount: 650, currency: 'USD' } }],
+            presentAtAllLocations: true,
+            presentAtLocationIds: [],
+            absentAtLocationIds: [],
+          },
+        ],
+        // SUN 00:00–00:01 window → practically never matches (see the getCatalog test above).
+        availabilityPeriods: {
+          [PERIOD_ID]: {
+            id: PERIOD_ID,
+            dayOfWeek: 'SUN',
+            startLocalTime: '00:00:00',
+            endLocalTime: '00:01:00',
+          },
+        },
+      };
+      square.getCatalog.mockResolvedValue(snapshotWithBreakfast);
+
+      const items = await service.getItems(DOWNTOWN_LOCATION_ID);
+      const oatmeal = items.find((item) => item.name === 'Oatmeal');
+      expect(oatmeal?.available).toBe(false);
+    });
+
     it('shows the single-location item only at its location', async () => {
       const downtown = await service.getItems(DOWNTOWN_LOCATION_ID);
       const airport = await service.getItems(AIRPORT_LOCATION_ID);
@@ -171,6 +222,12 @@ describe('CatalogService', () => {
     it('resolves no image URLs for an item without images', async () => {
       const drip = await service.getItem('item-drip', DOWNTOWN_LOCATION_ID);
       expect(drip.imageUrls).toEqual([]);
+    });
+
+    it('carries availability inherited from the item category', async () => {
+      const latte = await service.getItem('item-latte', DOWNTOWN_LOCATION_ID);
+      expect(latte.available).toBe(true);
+      expect(latte.availabilityWindows).toBeNull();
     });
 
     it('throws NotFound for an unknown id', async () => {

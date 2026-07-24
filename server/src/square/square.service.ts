@@ -91,6 +91,15 @@ export class SquareService {
         }
       }
       const snapshot: CatalogSnapshot = { items, categories, images, availabilityPeriods };
+      this.logger.debug(
+        `getCatalog fetched ${Object.keys(availabilityPeriods).length} availability period(s): ` +
+          `${JSON.stringify(availabilityPeriods)} — categories with periods: ` +
+          JSON.stringify(
+            categories
+              .filter((c) => c.availabilityPeriodIds.length > 0)
+              .map((c) => ({ id: c.id, name: c.name, availabilityPeriodIds: c.availabilityPeriodIds })),
+          ),
+      );
       this.catalogCache.set(SQUARE_CACHE.CATALOG_KEY, snapshot);
       return snapshot;
     } catch (error) {

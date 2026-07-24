@@ -18,4 +18,8 @@ export interface ItemDetailView {
   /** The primary image URL, or `null` when the item has no image (→ placeholder). */
   imageUrl: string | null;
   variations: ItemVariationView[];
+  /** Whether the item is currently orderable, inherited from its category's time windows. */
+  available: boolean;
+  /** Today's orderable windows (location timezone) inherited from the category. null = no limit. */
+  availabilityWindows: Array<{ startLocalTime: string; endLocalTime: string }> | null;
 }

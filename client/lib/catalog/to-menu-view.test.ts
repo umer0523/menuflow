@@ -18,6 +18,8 @@ const CATEGORIES: MenuCategoryResponseDto[] = [
         categoryId: 'cat-coffee',
         price: { amount: 500, currency: 'USD' },
         imageIds: [],
+        available: true,
+        availabilityWindows: null,
       },
       {
         id: 'item-free',
@@ -25,6 +27,8 @@ const CATEGORIES: MenuCategoryResponseDto[] = [
         categoryId: 'cat-coffee',
         price: null,
         imageIds: [],
+        available: true,
+        availabilityWindows: null,
       },
     ],
   },

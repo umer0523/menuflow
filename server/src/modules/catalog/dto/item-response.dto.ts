@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+import { AvailabilityWindowDto } from './availability-window-response.dto';
 import { MoneyResponseDto } from './money-response.dto';
 
 /**
@@ -32,4 +33,21 @@ export class ItemResponseDto {
     description: 'Square image ids (resolved to URLs on the item-detail view).',
   })
   imageIds!: string[];
+
+  @ApiProperty({
+    description:
+      "Whether this item is currently orderable, inherited from its category's time-of-day / " +
+      'day-of-week availability evaluated in the location timezone. True for items with no ' +
+      'category or a category without periods.',
+  })
+  available!: boolean;
+
+  @ApiProperty({
+    description:
+      "Today's orderable windows (location timezone) inherited from the item's category. " +
+      'null = no time restriction; empty array = has periods but none apply today.',
+    nullable: true,
+    type: [AvailabilityWindowDto],
+  })
+  availabilityWindows!: AvailabilityWindowDto[] | null;
 }
