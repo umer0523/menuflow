@@ -16,7 +16,7 @@ const PLACEHOLDER_ENV: Record<string, string> = {
   SQUARE_ACCESS_TOKEN: 'openapi-generation-placeholder',
   SQUARE_ENV: 'sandbox',
   SQUARE_BASE_URL: 'https://connect.squareupsandbox.com',
-  PORT: '3001',
+  PORT: '8080',
   CLIENT_ORIGIN: 'http://localhost:3000',
 };
 

@@ -22,7 +22,7 @@ pnpm dev                        # generates API client, then runs client + serve
 ```
 
 - Client: Next.js dev server on http://localhost:3000
-- Server: NestJS API on http://localhost:3001 (health check at `/health`, API docs at `/docs`)
+- Server: NestJS API on http://localhost:8080 (health check at `/health`, API docs at `/docs`)
 
 The server validates its environment on startup and **fails fast** if any Square variable is missing or malformed.
 

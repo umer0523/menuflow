@@ -10,7 +10,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 
 const CLIENT_URL = 'http://localhost:3000';
-const SERVER_HEALTH_URL = 'http://localhost:3001/health';
+const SERVER_HEALTH_URL = 'http://localhost:8080/health';
 const SERVER_BOOT_TIMEOUT_MS = 120_000;
 
 export default defineConfig({

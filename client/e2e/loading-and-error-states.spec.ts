@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
  */
 test.describe('loading and error states', () => {
   test('shows loading skeletons while fetching data', async ({ page }) => {
-    await page.route('http://localhost:3001/**', async (route) => {
+    await page.route('http://localhost:8080/**', async (route) => {
       await new Promise<void>((resolve) => setTimeout(resolve, 1500));
       await route.continue();
     });
@@ -26,7 +26,7 @@ test.describe('loading and error states', () => {
   }) => {
     let failCatalog = true;
 
-    await page.route('http://localhost:3001/**', async (route) => {
+    await page.route('http://localhost:8080/**', async (route) => {
       if (route.request().url().includes('/locations')) {
         await route.continue();
       } else if (failCatalog) {
@@ -65,7 +65,7 @@ test.describe('loading and error states', () => {
     await expect(page).toHaveURL(/\/items\/.+/);
 
     let failItem = true;
-    await page.route('http://localhost:3001/items/**', async (route) => {
+    await page.route('http://localhost:8080/items/**', async (route) => {
       if (failItem) {
         await route.abort('failed');
       } else {

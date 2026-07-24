@@ -6,5 +6,5 @@
 process.env.SQUARE_ACCESS_TOKEN ??= 'e2e-placeholder';
 process.env.SQUARE_ENV ??= 'sandbox';
 process.env.SQUARE_BASE_URL ??= 'https://connect.squareupsandbox.com';
-process.env.PORT ??= '3001';
+process.env.PORT ??= '8080';
 process.env.CLIENT_ORIGIN ??= 'http://localhost:3000';
