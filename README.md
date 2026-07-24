@@ -32,14 +32,14 @@ The server validates its environment on startup and **fails fast** if any Square
 
 Run from the repo root:
 
-| Script              | Purpose                                                        |
-| ------------------- | -------------------------------------------------------------- |
-| `pnpm dev`          | Regenerate API client, then run client + server together       |
-| `pnpm build`        | Build both workspaces                                          |
-| `pnpm lint`         | Lint both workspaces                                           |
-| `pnpm test`         | Run all unit tests                                             |
+| Script              | Purpose                                                       |
+| ------------------- | ------------------------------------------------------------- |
+| `pnpm dev`          | Regenerate API client, then run client + server together      |
+| `pnpm build`        | Build both workspaces                                         |
+| `pnpm lint`         | Lint both workspaces                                          |
+| `pnpm test`         | Run all unit tests                                            |
 | `pnpm api:generate` | Regenerate OpenAPI spec + typed client (run by `dev` already) |
-| `pnpm format`       | Prettier write across the repo                                 |
+| `pnpm format`       | Prettier write across the repo                                |
 
 ## Testing
 
@@ -73,7 +73,7 @@ Reports and artifacts (`playwright-report/`, `test-results/`) are git-ignored.
    pnpm --filter @menuflow/server seed:square
    ```
 
-   It provisions the full target data set — a second location (**Uptown**), **7 categories** (including **Breakfast** 7–11 AM, **Lunch** 11 AM–3 PM, and **Dinner** 5–10 PM, each gated every day via `CatalogAvailabilityPeriod`), and **14 priced items**, including one item absent at Uptown and one exclusive to it (proving the location filter both ways) — and safely refuses to run if a second location or catalog items already exist. To re-apply the seed over an existing catalog (e.g. to add the time-restricted categories to a sandbox seeded earlier), wipe and reseed:
+   It provisions the full target data set — a second location (**Uptown**), **7 categories** (including **Breakfast** 7–11 AM, **Lunch** 11 AM–3 PM, and **Dinner** 5–10 PM, each gated every day via `CatalogAvailabilityPeriod`), and **14 priced items**, including one item absent at Uptown and one exclusive to it (proving the location filter both ways) — and safely refuses to run if a second location or catalog items already exist. It also sets **distinct timezones** on the two locations (`America/New_York` and `America/Los_Angeles`), so the same instant resolves to a different local time — and can show different availability — depending on which location is selected. To re-apply the seed over an existing catalog (e.g. to add the time-restricted categories to a sandbox seeded earlier), wipe and reseed:
 
    ```bash
    pnpm --filter @menuflow/server seed:square:reset

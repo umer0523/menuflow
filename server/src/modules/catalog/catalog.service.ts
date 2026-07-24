@@ -167,11 +167,11 @@ export class CatalogService {
   }
 
   /** Emits the resolved timezone, current local day/time, and per-category availability inputs. */
-  private logDebug(
-    locationId: string,
-    timezone: string,
-    categories: CatalogCategoryModel[],
-  ): void {
+  private logDebug(locationId: string, timezone: string, categories: CatalogCategoryModel[]): void {
+    // Skip the formatter + stringify work entirely when debug output is disabled.
+    if (!Logger.isLevelEnabled('debug')) {
+      return;
+    }
     const nowLocal = new Intl.DateTimeFormat('en-US', {
       timeZone: timezone,
       weekday: 'short',
@@ -191,9 +191,7 @@ export class CatalogService {
     );
   }
 
-  private indexCategories(
-    categories: CatalogCategoryModel[],
-  ): Map<string, CatalogCategoryModel> {
+  private indexCategories(categories: CatalogCategoryModel[]): Map<string, CatalogCategoryModel> {
     return new Map(categories.map((category) => [category.id, category]));
   }
 

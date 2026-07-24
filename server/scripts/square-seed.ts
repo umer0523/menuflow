@@ -274,6 +274,28 @@ async function ensureSecondLocation(client: SquareClient, logger: Logger): Promi
   return location?.id ?? '';
 }
 
+/** Distinct IANA zones per location (by list order) so time-of-day availability differs across them. */
+const LOCATION_TIMEZONES = ['America/New_York', 'America/Los_Angeles'] as const;
+
+/**
+ * Square sandbox defaults new locations to UTC (it doesn't derive an IANA zone from the address),
+ * which makes the time-of-day availability bonus impossible to demo across zones. Set explicit,
+ * distinct timezones so the same instant resolves to a different local time — and possibly a
+ * different availability — at each location. No-op when a location already has its target zone.
+ */
+async function ensureLocationTimezones(client: SquareClient, logger: Logger): Promise<void> {
+  const { locations = [] } = await client.locations.list();
+  for (let i = 0; i < locations.length && i < LOCATION_TIMEZONES.length; i += 1) {
+    const location = locations[i];
+    const target = LOCATION_TIMEZONES[i];
+    if (!location?.id || location.timezone === target) {
+      continue;
+    }
+    await client.locations.update({ locationId: location.id, location: { timezone: target } });
+    logger.log(`Set ${location.name} (${location.id}) timezone → ${target}.`);
+  }
+}
+
 /**
  * Deletes every existing catalog object so a reseed starts from a clean slate. Opt-in — only runs
  * when `--reset` (or `SEED_RESET=1`) is passed, because it is destructive. Used to reapply the seed
@@ -351,6 +373,7 @@ async function main(): Promise<void> {
     if (secondLocationId === '') {
       throw new Error('Could not resolve a second location id; aborting catalog seed.');
     }
+    await ensureLocationTimezones(client, logger);
     if (reset) {
       await resetCatalog(client, logger);
     }
