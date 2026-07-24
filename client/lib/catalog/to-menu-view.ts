@@ -24,5 +24,7 @@ function toItemView(item: MenuCategoryResponseDto['items'][number]): MenuItemVie
     name: item.name,
     description: item.description,
     priceLabel: item.price === null ? null : formatMoney(item.price),
+    available: item.available,
+    availabilityWindows: item.availabilityWindows ?? null,
   };
 }

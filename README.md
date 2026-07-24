@@ -73,7 +73,13 @@ Reports and artifacts (`playwright-report/`, `test-results/`) are git-ignored.
    pnpm --filter @menuflow/server seed:square
    ```
 
-   It provisions the full target data set — a second location (**Uptown**), **5 categories** (including a **Breakfast** category restricted to 7–11 AM every day via `CatalogAvailabilityPeriod`), and **10 priced items**, including one item absent at Uptown and one exclusive to it (proving the location filter both ways) — and safely refuses to run if a second location or catalog items already exist. Or seed manually in the Square dashboard: aim for **2 locations**, **3–5 categories**, **6–10 items**, with **at least one item available at only one of the two locations** and optionally a time-restricted category.
+   It provisions the full target data set — a second location (**Uptown**), **7 categories** (including **Breakfast** 7–11 AM, **Lunch** 11 AM–3 PM, and **Dinner** 5–10 PM, each gated every day via `CatalogAvailabilityPeriod`), and **14 priced items**, including one item absent at Uptown and one exclusive to it (proving the location filter both ways) — and safely refuses to run if a second location or catalog items already exist. To re-apply the seed over an existing catalog (e.g. to add the time-restricted categories to a sandbox seeded earlier), wipe and reseed:
+
+   ```bash
+   pnpm --filter @menuflow/server seed:square:reset
+   ```
+
+   Or seed manually in the Square dashboard: aim for **2 locations**, **3–7 categories**, **6–14 items**, with **at least one item available at only one of the two locations** and at least one time-restricted category.
 
 5. Confirm the wiring end-to-end (fetches locations + catalog from your sandbox):
 

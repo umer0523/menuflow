@@ -10,6 +10,8 @@ const ITEM: MenuItemView = {
   name: 'Latte',
   description: 'Espresso with steamed milk',
   priceLabel: '$5.00',
+  available: true,
+  availabilityWindows: null,
 };
 
 describe('MenuItemCard', () => {
@@ -20,5 +22,19 @@ describe('MenuItemCard', () => {
     expect(link).toHaveAttribute('href', '/items/item-latte');
     expect(link).toHaveAttribute('data-item-name', 'Latte');
     expect(screen.getByText('$5.00')).toBeInTheDocument();
+  });
+
+  it('shows a time-window badge when the item is currently unavailable', () => {
+    render(
+      <MenuItemCard
+        item={{
+          ...ITEM,
+          available: false,
+          availabilityWindows: [{ startLocalTime: '07:00:00', endLocalTime: '11:00:00' }],
+        }}
+      />,
+    );
+
+    expect(screen.getByText('Available 7 AM–11 AM')).toBeInTheDocument();
   });
 });

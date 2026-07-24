@@ -270,15 +270,45 @@ async function ensureSecondLocation(client: SquareClient, logger: Logger): Promi
   return location?.id ?? '';
 }
 
+/**
+ * Deletes every existing catalog object so a reseed starts from a clean slate. Opt-in — only runs
+ * when `--reset` (or `SEED_RESET=1`) is passed, because it is destructive. Used to reapply the seed
+ * when a catalog already exists (e.g. to add the availability-period categories to an old sandbox).
+ */
+async function resetCatalog(client: SquareClient, logger: Logger): Promise<void> {
+  const ids: string[] = [];
+  const page = await client.catalog.list({ types: 'ITEM,CATEGORY,IMAGE,AVAILABILITY_PERIOD' });
+  for await (const object of page) {
+    if (object.id) {
+      ids.push(object.id);
+    }
+  }
+  if (ids.length === 0) {
+    logger.log('Reset: catalog already empty.');
+    return;
+  }
+  // `batchDelete` accepts up to 200 ids per call; deleting an ITEM cascades to its variations.
+  for (let i = 0; i < ids.length; i += 200) {
+    await client.catalog.batchDelete({ objectIds: ids.slice(i, i + 200) });
+  }
+  logger.log(`Reset: deleted ${ids.length} catalog object(s).`);
+}
+
 async function seedCatalog(
   client: SquareClient,
   secondLocationId: string,
   logger: Logger,
+  reset: boolean,
 ): Promise<void> {
-  const page = await client.catalog.list({ types: 'ITEM' });
-  for await (const existing of page) {
-    logger.log(`Catalog already has items (e.g. ${existing.id}) — skipping catalog seed.`);
-    return;
+  if (!reset) {
+    const page = await client.catalog.list({ types: 'ITEM' });
+    for await (const existing of page) {
+      logger.log(
+        `Catalog already has items (e.g. ${existing.id}) — skipping catalog seed. ` +
+          `Pass --reset (or SEED_RESET=1) to wipe and reseed.`,
+      );
+      return;
+    }
   }
   const PERIOD_IDS_BY_KEY: Record<string, string[]> = {
     breakfast: BREAKFAST_PERIOD_IDS,
@@ -312,11 +342,15 @@ async function main(): Promise<void> {
   });
   try {
     const client = app.get<SquareClient>(SQUARE_CLIENT);
+    const reset = process.argv.includes('--reset') || process.env.SEED_RESET === '1';
     const secondLocationId = await ensureSecondLocation(client, logger);
     if (secondLocationId === '') {
       throw new Error('Could not resolve a second location id; aborting catalog seed.');
     }
-    await seedCatalog(client, secondLocationId, logger);
+    if (reset) {
+      await resetCatalog(client, logger);
+    }
+    await seedCatalog(client, secondLocationId, logger, reset);
     logger.log('Seed complete — verify with `pnpm --filter @menuflow/server smoke:square`.');
   } catch (error) {
     logger.error(error instanceof Error ? error.message : String(error));

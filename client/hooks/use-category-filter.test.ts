@@ -12,7 +12,15 @@ function category(id: string, name: string): MenuCategoryView {
     name,
     available: true,
     availabilityWindows: null,
-    items: [{ id: `${id}-item`, name: `${name} item`, priceLabel: null }],
+    items: [
+      {
+        id: `${id}-item`,
+        name: `${name} item`,
+        priceLabel: null,
+        available: true,
+        availabilityWindows: null,
+      },
+    ],
   };
 }
 
