@@ -85,7 +85,8 @@ describe('MenuBrowser filtering', () => {
     expect(screen.getByText('Croissant')).toBeInTheDocument();
   });
 
-  it('shows an unavailable category dimmed with a time label and excludes it from the filter', () => {
+  it('shows an unavailable category with a per-card time badge and excludes it from the filter', () => {
+    const windows = [{ startLocalTime: '07:00:00', endLocalTime: '11:00:00' }];
     useCatalogMock.mockReturnValue(
       mockCatalogQuery({
         data: [
@@ -93,7 +94,13 @@ describe('MenuBrowser filtering', () => {
           {
             ...MENU[1],
             available: false,
-            availabilityWindows: [{ startLocalTime: '07:00:00', endLocalTime: '11:00:00' }],
+            availabilityWindows: windows,
+            // Items inherit the closed category's availability (as the backend sends them).
+            items: MENU[1].items.map((item) => ({
+              ...item,
+              available: false,
+              availabilityWindows: windows,
+            })),
           },
         ],
       }),
@@ -101,11 +108,11 @@ describe('MenuBrowser filtering', () => {
 
     render(<MenuBrowser />);
 
-    // Items from both categories are rendered (unavailable is dimmed, not hidden).
+    // Items from both categories are rendered (unavailable is disabled-looking, not hidden).
     expect(screen.getByText('Latte')).toBeInTheDocument();
     expect(screen.getByText('Croissant')).toBeInTheDocument();
 
-    // The time availability label is shown for the out-of-window category.
+    // The out-of-window item shows its schedule badge on the card.
     expect(screen.getByText('Available 7 AM–11 AM')).toBeInTheDocument();
 
     // Unavailable category is excluded from filter chips (only 1 available → no filter rendered).

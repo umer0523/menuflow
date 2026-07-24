@@ -90,7 +90,7 @@ export function ItemDetail({ itemId }: { itemId: string }) {
             </span>
           </div>
           {!item.available ? (
-            <span className="inline-flex w-fit items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+            <span className="inline-flex w-fit items-center gap-1 rounded-full border border-border bg-background px-2.5 py-0.5 text-xs font-medium text-foreground">
               <Clock className="h-3 w-3" aria-hidden="true" />
               {buildAvailabilityLabel(item.availabilityWindows)}
             </span>

@@ -9,14 +9,16 @@ import { SQUARE_CLIENT } from '../src/square/square-client.provider';
 
 /**
  * One-shot sandbox seeder for local development. Provisions the challenge's target data set —
- * 2 locations, 4 categories, 8 items (with priced variations), including one item absent at the
- * second location and one present *only* there — so the location-availability rule is provable
- * end-to-end against the real sandbox.
+ * 2 locations, 7 categories, 14 items (with priced variations), including one item absent at the
+ * second location and one present *only* there (proves the location-availability rule), plus
+ * Breakfast / Lunch / Dinner categories gated by `AVAILABILITY_PERIOD` objects (proves the
+ * time-of-day rule) — all verifiable end-to-end against the real sandbox.
  *
  * Writes go through the raw SDK client (via the `SQUARE_CLIENT` DI token) rather than
  * `SquareService`: the app's seam is deliberately read-only, and seeding is a dev tool, not an
  * app capability. Idempotent by guard, not by upsert: it refuses to run when a second location
- * or any catalog item already exists, so re-runs can't duplicate `#`-temp-id objects.
+ * or any catalog item already exists, so re-runs can't duplicate `#`-temp-id objects. Pass
+ * `--reset` (or `SEED_RESET=1`) to wipe the catalog first and reapply over existing data.
  *
  * Run: `pnpm --filter @menuflow/server seed:square` (needs `server/.env` sandbox credentials)
  */
@@ -143,14 +145,18 @@ const SEED_ITEMS: ReadonlyArray<SeedItem> = [
   {
     key: 'soup-of-the-day',
     name: 'Soup of the Day',
-    description: 'Ask your barista for today\'s selection. Available 11 AM–3 PM.',
+    description: "Ask your barista for today's selection. Available 11 AM–3 PM.",
     categoryKey: 'lunch',
-    variations: [{ name: 'Cup', cents: 650 }, { name: 'Bowl', cents: 850 }],
+    variations: [
+      { name: 'Cup', cents: 650 },
+      { name: 'Bowl', cents: 850 },
+    ],
   },
   {
     key: 'grilled-chicken-salad',
     name: 'Grilled Chicken Salad',
-    description: 'Mixed greens, cherry tomatoes, cucumber, lemon vinaigrette. Available 11 AM–3 PM.',
+    description:
+      'Mixed greens, cherry tomatoes, cucumber, lemon vinaigrette. Available 11 AM–3 PM.',
     categoryKey: 'lunch',
     variations: [{ name: 'Regular', cents: 1200 }],
   },
@@ -202,9 +208,7 @@ const DINNER_PERIOD_OBJECTS: Square.CatalogObject[] = DAYS_OF_WEEK.map((day) => 
   availabilityPeriodData: { dayOfWeek: day, startLocalTime: '17:00:00', endLocalTime: '22:00:00' },
 }));
 
-const DINNER_PERIOD_IDS: string[] = DAYS_OF_WEEK.map(
-  (day) => `#avail-dinner-${day.toLowerCase()}`,
-);
+const DINNER_PERIOD_IDS: string[] = DAYS_OF_WEEK.map((day) => `#avail-dinner-${day.toLowerCase()}`);
 
 function toCategoryObject(
   category: { key: string; name: string },
